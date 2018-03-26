@@ -1,23 +1,23 @@
 {
-  "name": "untitled",
+  "name": "patterns",
   "version": "0.1.0",
   "description": "description",
-  "main": "src/untitled.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "mocha --reporter spec",
     "cover": "node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R spec test/*"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/0x59/untitled.git"
+    "url": "git+https://github.com/0x59/patterns.git"
   },
   "keywords": [],
   "author": "0x59 <0x59.sw@gmail.com> (https://github.com/0x59)",
   "license": "UNLICENSED",
   "bugs": {
-    "url": "https://github.com/0x59/untitled/issues"
+    "url": "https://github.com/0x59/patterns/issues"
   },
-  "homepage": "https://github.com/0x59/untitled#readme",
+  "homepage": "https://github.com/0x59/patterns#readme",
   "devDependencies": {
     "chai": "^4.1.2",
     "coveralls": "^3.0.0",
