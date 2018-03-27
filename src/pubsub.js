@@ -92,18 +92,22 @@ export default ( superclass ) => class extends superclass {
 		return ( data ) => setTimeout(fn.bind(null, data))
 	}
 
-	[$_makeSubscriber]( subFn, async, active ) {
-		const fn = async ? this[$_makeAsyncSubscriber](subFn) : subFn
+	[$_makeSubscriber]( subFn, sync, active ) {
+		const fn = sync ? subFn : this[$_makeAsyncSubscriber](subFn)
 
 		return { active, fn }
 	}
 
-	[$_makeSubscription]( topic, fn, async, active = true ) {
+	[$_makeSubscription]( topic, fn, sync, sendLastMessage = false, active = true ) {
 		const
 			token = Symbol(),
-			subscriber = [$_makeSubscriber](fn, async))
+			subscriber = [$_makeSubscriber](fn, sync))
 		
 		topic[$_subscribers].set(token, subscriber)
+
+		if( sendLastMessage ) {
+			subscriber.fn(topic[$_data])
+		}
 
 		return {
 			on: [$_makeOn](subscriber, token),
@@ -114,10 +118,10 @@ export default ( superclass ) => class extends superclass {
 	}
 
 	[$_subscribe]( params ) {
-		const { topicIds, fn, async, topic, idIndex } = params
+		const { topicIds, fn, sync, sendLastMessage, topic, idIndex } = params
 
 		if( topicIds.length <= idIndex ) {
-			return [$_makeSubscription](topic, fn, async)
+			return [$_makeSubscription](topic, fn, sync, sendLastMessage)
 
 		} else {
 			const topicId = topicIds[idIndex]
@@ -130,14 +134,14 @@ export default ( superclass ) => class extends superclass {
 				nextTopic = topic.get(topicId)
 			}
 
-			return this[$_subscribe]({ topicIds, fn,
+			return this[$_subscribe]({ topicIds, fn, sync, sendLastMessage,
 				idIndex: index + 1,
 				topic: nextTopic
 			})
 		}
 	}
 
-	publish( topicId, data, async = true ) {
+	publish( topicId, data, sync = false ) {
 		if( _.nStr(topicId) ) {
 			throw new Error('Topic identifier required to publish')
 		}
@@ -146,15 +150,15 @@ export default ( superclass ) => class extends superclass {
 			topicIds = topicId.split(TOPIC_DEL),
 			pubArgs = { topicIds, data, idIndex: 0, topic: this[$_topics] }
 
-		if( async ) {
-			setTimeout(this[$_publish].bind(this, pubArgs))
+		if( sync ) {
+			this[$_publish](pubArgs)
 		
 		} else {
-			this[$_publish](pubArgs)
+			setTimeout(this[$_publish].bind(this, pubArgs))
 		}
 	}
 
-	subscribe( topicId, fn, async = true, sendLastMessage = false ) {
+	subscribe( topicId, fn, sync = false, sendLastMessage = false ) {
 		if( _.nStr(topicId) ) {
 			throw new Error('Topic identifier required to subscribe')
 		}
@@ -165,7 +169,9 @@ export default ( superclass ) => class extends superclass {
 
 		const
 			topicIds = topicId.split(TOPIC_DEL),
-			subArgs = { topicIds, fn, async, idIndex: 0, topic: this[$_topics] }
+			subArgs = { topicIds, fn, sync, sendLastMessage,
+				idIndex: 0, topic: this[$_topics]
+			}
 
 		return this[$_subscribe](subArgs)
 	}
