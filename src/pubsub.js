@@ -1,6 +1,6 @@
 
 import _ from './utility.js'
-import Symbols from './symbols.js'
+import Symbols from './module-symbols.js'
 
 const
 	TOPIC_DEL = '/',
