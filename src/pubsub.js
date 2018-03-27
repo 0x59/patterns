@@ -8,6 +8,11 @@ const
 		$_initTopics: $._initTopics,
 		$_addTopic: $._addTopic,
 		$_makeTopic: $._makeTopic,
+		$_makeOn: $._makeOn,
+		$_makeOff: $._makeOff,
+		$_makeToggle: $._makeToggle,
+		$_makeUnsubscribe: $._makeUnsubscribe,
+		$_makeAsyncSubscriber: $._makeAsyncSubscriber,
 		$_makeSubscriber: $._makeSubscriber,
 		$_makeSubscription: $._makeSubscription,
 		$_topics: $._topics,
@@ -23,13 +28,6 @@ export default ( superclass ) => class extends superclass {
 		}
 	}
 	
-	[$_makeTopic]( data ) {
-		return new Map([
-			[ [$_data], data ],
-			[ [$_subscribers], new Map() ]
-		])
-	}
-
 	[$_addTopic]( topic, initialData ) {
 		if( !this[$_topics].has(topic) ) {
 			this[$_topics].set(topic, this[$_makeTopic](initialData))
@@ -38,40 +36,13 @@ export default ( superclass ) => class extends superclass {
 		return this[$_topics].get(topic)
 	}
 
-/*	[$_publish]( params ) {
-		const { topicIds, data, topic, async, idIndex } = params
-
-		if( topicIds.length > idIndex ) {
-			const topicId = topicIds[idIndex]
-			let nextTopic
-
-			if( !topic.has(topicId) {
-				nextTopic = this[$_addTopic](topicId)
-			
-			} else {
-				nextTopic = topic.get(topicId)
-			}
-
-			this[$_publish]({ topicIds, data, async,
-				idIndex: index + 1,
-				topic: nextTopic
-			})
-		}
-
-		topic[$_data] = data
-
-		if( async ) {
-			for( const fn of topic[$_subscribers] ) {
-				setTimeout(fn.bind(null, topicIds, data))
-			}
-
-		} else {
-			for( const fn of topic[$_subscribers] ) {
-				fn(topicIds, data))
-			}
-		}
+	[$_makeTopic]( data ) {
+		return new Map([
+			[ [$_data], data ],
+			[ [$_subscribers], new Map() ]
+		])
 	}
-*/
+
 	[$_publish]( params ) {
 		const { topicIds, data, topic, idIndex } = params
 
@@ -94,25 +65,10 @@ export default ( superclass ) => class extends superclass {
 
 		topic[$_data] = data
 
-		for( const fn of topic[$_subscribers] ) {
-			fn(topicIds, data))
-		}
-	}
-
-	publish( topicId, data, async = true ) {
-		if( _.nStr(topicId) ) {
-			throw new Error('Topic identifier required to publish')
-		}
-
-		const
-			topicIds = topicId.split(TOPIC_DEL),
-			pubArgs = { topicIds, data, idIndex: 0, topic: this[$_topics] }
-
-		if( async ) {
-			setTimeout(this[$_publish].bind(this, pubArgs))
-		
-		} else {
-			this[$_publish](pubArgs)
+		for( const sub of topic[$_subscribers] ) {
+			if( sub.active ) {
+				sub.fn(data)
+			}
 		}
 	}
 
@@ -132,12 +88,12 @@ export default ( superclass ) => class extends superclass {
 		return () => topic[$_subscribers].delete(token)
 	}
 
-	[$_asyncSubscribe]( fn ) {
+	[$_makeAsyncSubscriber]( fn ) {
 		return ( data ) => setTimeout(fn.bind(null, data))
 	}
 
 	[$_makeSubscriber]( subFn, async, active ) {
-		const fn = async ? this[$_asyncSubscribe](subFn) : subFn
+		const fn = async ? this[$_makeAsyncSubscriber](subFn) : subFn
 
 		return { active, fn }
 	}
@@ -175,9 +131,26 @@ export default ( superclass ) => class extends superclass {
 			}
 
 			return this[$_subscribe]({ topicIds, fn,
-					idIndex: index + 1,
-					topic: nextTopic
-				})
+				idIndex: index + 1,
+				topic: nextTopic
+			})
+		}
+	}
+
+	publish( topicId, data, async = true ) {
+		if( _.nStr(topicId) ) {
+			throw new Error('Topic identifier required to publish')
+		}
+
+		const
+			topicIds = topicId.split(TOPIC_DEL),
+			pubArgs = { topicIds, data, idIndex: 0, topic: this[$_topics] }
+
+		if( async ) {
+			setTimeout(this[$_publish].bind(this, pubArgs))
+		
+		} else {
+			this[$_publish](pubArgs)
 		}
 	}
 
@@ -195,41 +168,6 @@ export default ( superclass ) => class extends superclass {
 			subArgs = { topicIds, fn, async, idIndex: 0, topic: this[$_topics] }
 
 		return this[$_subscribe](subArgs)
-/*
-		if( this[$_topics].has(name) ) {
-			topic = this[$_topics].get(name)
-		
-			if( topic.data !== void 0 && sendLastMessage ) {
-				fn(name, topic.data)
-			}
-		
-		} else {
-			topic = this[$_addTopic](name)
-		}
-
-		topic.subscribers.push(fn)
-*/
-	}
-
-	unsubscribe( name, fn ) {
-		let topic
-
-		if( _.nStr(name) ) {
-			throw new Error('Topic name required to unsubscribe')
-		}
-
-		if( _.nFn(fn) ) {
-			throw new Error('Function required to unsubscribe')
-		}
-
-		if( this[$_topics].has(name) ) {
-			let index,
-				topic = this[$_topics].get(name)
-				
-			while( (index = topic.subscribers.indexOf(fn)) > -1 ) {
-				topic.subscribers.splice(index, 1)
-			}
-		}
 	}
 
 }
