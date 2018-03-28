@@ -6,7 +6,7 @@ const
 	TOPIC_DEL = '/',
 	$ = Symbols(), {
 		$_initTopics,
-		$_addTopicd,
+		$_addTopic,
 		$_makeTopic,
 		$_makeOn,
 		$_makeOff,
