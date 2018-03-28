@@ -5,19 +5,19 @@ import Symbols from './module-symbols.js'
 const
 	TOPIC_DEL = '/',
 	$ = Symbols(), {
-		$_initTopics: $._initTopics,
-		$_addTopic: $._addTopic,
-		$_makeTopic: $._makeTopic,
-		$_makeOn: $._makeOn,
-		$_makeOff: $._makeOff,
-		$_makeToggle: $._makeToggle,
-		$_makeUnsubscribe: $._makeUnsubscribe,
-		$_makeAsyncSubscriber: $._makeAsyncSubscriber,
-		$_makeSubscriber: $._makeSubscriber,
-		$_makeSubscription: $._makeSubscription,
-		$_topics: $._topics,
-		$_subscribers: $._subscribers,
-		$_data: $._data
+		$_initTopics,
+		$_addTopicd,
+		$_makeTopic,
+		$_makeOn,
+		$_makeOff,
+		$_makeToggle,
+		$_makeUnsubscribe,
+		$_makeAsyncSubscriber,
+		$_makeSubscriber,
+		$_makeSubscription,
+		$_topics,
+		$_subscribers,
+		$_data
 	} = $
 
 export default ( superclass ) => class extends superclass {
