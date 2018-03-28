@@ -22,12 +22,48 @@ const
 
 export default ( superclass ) => class extends superclass {
 
+	publish( topicId, data, sync = false ) {
+		if( _.nStr(topicId) ) {
+			throw new Error('Topic identifier required to publish')
+		}
+
+		const
+			topicIds = topicId.split(TOPIC_DEL),
+			pubArgs = { topicIds, data, idIndex: 0, topic: this[$_topics] }
+
+		if( sync ) {
+			this[$_publish](pubArgs)
+		
+		} else {
+			setTimeout(this[$_publish].bind(this, pubArgs))
+		}
+	}
+
+	subscribe( topicId, fn, sync = false, sendLastMessage = false, active = true ) {
+		if( _.nStr(topicId) ) {
+			throw new Error('Topic identifier required to subscribe')
+		}
+
+		if( _.nFn(fn) ) {
+			throw new Error('Function required to subscribe')
+		}
+
+		const
+			topicIds = topicId.split(TOPIC_DEL),
+			subArgs = { topicIds, fn, sync, sendLastMessage, active
+				idIndex: 0,
+				topic: this[$_topics]
+			}
+
+		return this[$_subscribe](subArgs)
+	}
+
 	[$_initTopics]() {
 		if( !this[$_topics] ) {
 			this[$_topics] = new Map()
 		}
 	}
-	
+
 	[$_addTopic]( topic, initialData ) {
 		if( !this[$_topics].has(topic) ) {
 			this[$_topics].set(topic, this[$_makeTopic](initialData))
@@ -63,11 +99,12 @@ export default ( superclass ) => class extends superclass {
 			})
 		}
 
+		const topicId = topicIds.slice(0, idIndex).join(TOPIC_DEL)
 		topic[$_data] = data
 
 		for( const sub of topic[$_subscribers] ) {
 			if( sub.active ) {
-				sub.fn(data)
+				sub.fn(topicId, data)
 			}
 		}
 	}
@@ -89,7 +126,7 @@ export default ( superclass ) => class extends superclass {
 	}
 
 	[$_makeAsyncSubscriber]( fn ) {
-		return ( data ) => setTimeout(fn.bind(null, data))
+		return ( topicId, data ) => setTimeout(fn.bind(null, topicId, data))
 	}
 
 	[$_makeSubscriber]( subFn, sync, active ) {
@@ -98,10 +135,11 @@ export default ( superclass ) => class extends superclass {
 		return { active, fn }
 	}
 
-	[$_makeSubscription]( topic, fn, sync, sendLastMessage = false, active = true ) {
+	[$_makeSubscription]( params ) {
 		const
+			{ fn, sync, sendLastMessage, active, topic } = params,
 			token = Symbol(),
-			subscriber = [$_makeSubscriber](fn, sync))
+			subscriber = [$_makeSubscriber](fn, sync, active))
 		
 		topic[$_subscribers].set(token, subscriber)
 
@@ -118,14 +156,16 @@ export default ( superclass ) => class extends superclass {
 	}
 
 	[$_subscribe]( params ) {
-		const { topicIds, fn, sync, sendLastMessage, topic, idIndex } = params
+		const { topicIds, idIndex } = params
 
 		if( topicIds.length <= idIndex ) {
-			return [$_makeSubscription](topic, fn, sync, sendLastMessage)
+			return [$_makeSubscription](params)
 
 		} else {
-			const topicId = topicIds[idIndex]
 			let nextTopic
+			const
+				{ fn, sync, sendLastMessage, active, topic } = params,
+				topicId = topicIds[idIndex]
 
 			if( !topic.has(topicId) {
 				nextTopic = this[$_addTopic](topicId)
@@ -139,41 +179,6 @@ export default ( superclass ) => class extends superclass {
 				topic: nextTopic
 			})
 		}
-	}
-
-	publish( topicId, data, sync = false ) {
-		if( _.nStr(topicId) ) {
-			throw new Error('Topic identifier required to publish')
-		}
-
-		const
-			topicIds = topicId.split(TOPIC_DEL),
-			pubArgs = { topicIds, data, idIndex: 0, topic: this[$_topics] }
-
-		if( sync ) {
-			this[$_publish](pubArgs)
-		
-		} else {
-			setTimeout(this[$_publish].bind(this, pubArgs))
-		}
-	}
-
-	subscribe( topicId, fn, sync = false, sendLastMessage = false ) {
-		if( _.nStr(topicId) ) {
-			throw new Error('Topic identifier required to subscribe')
-		}
-
-		if( _.nFn(fn) ) {
-			throw new Error('Function required to subscribe')
-		}
-
-		const
-			topicIds = topicId.split(TOPIC_DEL),
-			subArgs = { topicIds, fn, sync, sendLastMessage,
-				idIndex: 0, topic: this[$_topics]
-			}
-
-		return this[$_subscribe](subArgs)
 	}
 
 }
