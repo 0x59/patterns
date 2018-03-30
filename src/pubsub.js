@@ -29,13 +29,13 @@ export default ( superclass ) => class extends superclass {
 
 		const
 			topicIds = topicId.split(TOPIC_DEL),
-			pubArgs = { topicIds, data, idIndex: 0, topic: this[$_topics] }
+			args = { topicIds, data, idIndex: 0, topic: this[$_topics] }
 
 		if( sync ) {
-			this[$_publish](pubArgs)
-		
+			this[$_publish](args)
+
 		} else {
-			setTimeout(this[$_publish].bind(this, pubArgs))
+			setTimeout(this[$_publish].bind(this, args))
 		}
 	}
 
@@ -50,12 +50,12 @@ export default ( superclass ) => class extends superclass {
 
 		const
 			topicIds = topicId.split(TOPIC_DEL),
-			subArgs = { topicIds, fn, sync, sendLastMessage, active
+			args = { topicIds, fn, sync, sendLastMessage, active,
 				idIndex: 0,
 				topic: this[$_topics]
 			}
 
-		return this[$_subscribe](subArgs)
+		return this[$_subscribe](args)
 	}
 
 	[$_initTopics]() {
@@ -79,8 +79,8 @@ export default ( superclass ) => class extends superclass {
 		])
 	}
 
-	[$_publish]( params ) {
-		const { topicIds, data, topic, idIndex } = params
+	[$_publish]( args ) {
+		const { topicIds, topic, idIndex } = args
 
 		if( topicIds.length > idIndex ) {
 			const topicId = topicIds[idIndex]
@@ -93,13 +93,16 @@ export default ( superclass ) => class extends superclass {
 				nextTopic = topic.get(topicId)
 			}
 
-			this[$_publish]({ topicIds, data,
+			this[$_publish]({ ...args, 
 				idIndex: index + 1,
 				topic: nextTopic
 			})
 		}
 
-		const topicId = topicIds.slice(0, idIndex).join(TOPIC_DEL)
+		const
+			topicId = topicIds.slice(0, idIndex).join(TOPIC_DEL),
+			{ data } = args
+
 		topic[$_data] = data
 
 		for( const sub of topic[$_subscribers] ) {
@@ -135,16 +138,17 @@ export default ( superclass ) => class extends superclass {
 		return { active, fn }
 	}
 
-	[$_makeSubscription]( params ) {
+	[$_makeSubscription]( args ) {
 		const
-			{ fn, sync, sendLastMessage, active, topic } = params,
+			{ fn, sync, sendLastMessage, active, topic } = args,
 			token = Symbol(),
 			subscriber = [$_makeSubscriber](fn, sync, active))
 		
 		topic[$_subscribers].set(token, subscriber)
 
 		if( sendLastMessage ) {
-			subscriber.fn(topic[$_data])
+			const topicId = topicIds.slice(0, idIndex).join(TOPIC_DEL)
+			subscriber.fn(topicId, topic[$_data])
 		}
 
 		return {
@@ -155,16 +159,16 @@ export default ( superclass ) => class extends superclass {
 		}
 	}
 
-	[$_subscribe]( params ) {
-		const { topicIds, idIndex } = params
+	[$_subscribe]( args ) {
+		const { topicIds, idIndex } = args
 
 		if( topicIds.length <= idIndex ) {
-			return [$_makeSubscription](params)
+			return [$_makeSubscription](args)
 
 		} else {
 			let nextTopic
 			const
-				{ fn, sync, sendLastMessage, active, topic } = params,
+				{ topic } = args,
 				topicId = topicIds[idIndex]
 
 			if( !topic.has(topicId) {
@@ -174,8 +178,8 @@ export default ( superclass ) => class extends superclass {
 				nextTopic = topic.get(topicId)
 			}
 
-			return this[$_subscribe]({ topicIds, fn, sync, sendLastMessage,
-				idIndex: index + 1,
+			return this[$_subscribe]({ ...args,
+				idIndex: idIndex + 1,
 				topic: nextTopic
 			})
 		}
