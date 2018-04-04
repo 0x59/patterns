@@ -6,7 +6,7 @@ const
 		$_apply,
 		$_cache,
 		$_superclass
-	},
+	} = $,
 	cache = new Map()
 
 class MixinHierarchy {
