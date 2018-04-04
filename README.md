@@ -8,3 +8,6 @@
 ## Module Symbols Registry
 - Uses Proxy to create a symbol registry for use in modules
 - Symbols are created on first reference and later returned
+## Mixins
+- Provides mixin application through parameterized class expressions
+- Unique application sequences are cached
