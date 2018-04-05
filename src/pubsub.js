@@ -74,8 +74,8 @@ export default ( superclass ) => class extends superclass {
 
 	[$_makeTopic]( data ) {
 		return new Map([
-			[ [$_data], data ],
-			[ [$_subscribers], new Map() ]
+			[ $_data, data ],
+			[ $_subscribers, new Map() ]
 		])
 	}
 
@@ -142,7 +142,7 @@ export default ( superclass ) => class extends superclass {
 		const
 			{ fn, sync, sendLastMessage, active, topic } = args,
 			token = Symbol(),
-			subscriber = [$_makeSubscriber](fn, sync, active))
+			subscriber = this[$_makeSubscriber](fn, sync, active))
 		
 		topic[$_subscribers].set(token, subscriber)
 
@@ -152,10 +152,10 @@ export default ( superclass ) => class extends superclass {
 		}
 
 		return {
-			on: [$_makeOn](subscriber, token),
-			off: [$_makeOff](subscriber, token),
-			toggle: [$_makeToggle](subscriber, token),
-			unsubscribe: [$_makeUnsubscribe](subscriber, token)
+			on: this[$_makeOn](subscriber, token),
+			off: this[$_makeOff](subscriber, token),
+			toggle: this[$_makeToggle](subscriber, token),
+			unsubscribe: this[$_makeUnsubscribe](subscriber, token)
 		}
 	}
 
@@ -163,7 +163,7 @@ export default ( superclass ) => class extends superclass {
 		const { topicIds, idIndex } = args
 
 		if( topicIds.length <= idIndex ) {
-			return [$_makeSubscription](args)
+			return this[$_makeSubscription](args)
 
 		} else {
 			let nextTopic
