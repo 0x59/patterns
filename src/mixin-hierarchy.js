@@ -39,5 +39,5 @@ class MixinHierarchy {
 
 const superclass = superclass => new MixinHierarchy(superclass)
 
-export { superclass }
+export { superclass, MixinHierarchy }
 
