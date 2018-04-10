@@ -1,5 +1,5 @@
 
-import Symbols from './module-symbols.js'
+import { Symbols } from './module-symbols.js'
 
 const
 	$ = Symbols(), {

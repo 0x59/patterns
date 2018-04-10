@@ -1,6 +1,6 @@
 
-import _ from './utility.js'
-import Symbols from './module-symbols.js'
+//import _ from './utility.js'
+import { Symbols } from './module-symbols.js'
 
 const
 	TOPIC_DEL = '/',
@@ -20,7 +20,7 @@ const
 		$_data
 	} = $
 
-export default ( superclass ) => class extends superclass {
+const PubSubMixin = ( superclass ) => class extends superclass {
 
 	publish( topicId, data, sync = false ) {
 		if( _.nStr(topicId) ) {
@@ -86,7 +86,7 @@ export default ( superclass ) => class extends superclass {
 			const topicId = topicIds[idIndex]
 			let nextTopic
 
-			if( !topic.has(topicId) {
+			if( !topic.has(topicId) ) {
 				nextTopic = this[$_addTopic](topicId)
 			
 			} else {
@@ -142,7 +142,7 @@ export default ( superclass ) => class extends superclass {
 		const
 			{ fn, sync, sendLastMessage, active, topic } = args,
 			token = Symbol(),
-			subscriber = this[$_makeSubscriber](fn, sync, active))
+			subscriber = this[$_makeSubscriber](fn, sync, active)
 		
 		topic[$_subscribers].set(token, subscriber)
 
@@ -171,7 +171,7 @@ export default ( superclass ) => class extends superclass {
 				{ topic } = args,
 				topicId = topicIds[idIndex]
 
-			if( !topic.has(topicId) {
+			if( !topic.has(topicId) ) {
 				nextTopic = this[$_addTopic](topicId)
 
 			} else {
@@ -186,4 +186,6 @@ export default ( superclass ) => class extends superclass {
 	}
 
 }
+
+export { PubSubMixin }
 

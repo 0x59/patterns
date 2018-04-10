@@ -5,11 +5,11 @@ const expect = chai.expect
 
 describe('MixinHierarchy', function() {
 
-	describe('superclass', function() {
+	it('should export a function', function() {
+		expect(superclass).to.be.a('function')
+	})
 
-		it('should be a function', function() {
-			expect(superclass).to.be.a('function')
-		})
+	describe('superclass()', function() {
 
 		it('should return a MixinHierarchy instance', function() {
 			expect(superclass()).to.be.an.instanceof(MixinHierarchy)
@@ -17,11 +17,14 @@ describe('MixinHierarchy', function() {
 
 	})
 
-	const Superclass = class {}
-
 	describe('MixinHierarchy', function() {
 		
 		describe('#withMixins()', function() {
+			let Superclass
+
+			before(function() {
+				Superclass = class {}
+			})
 
 			it('should not return a MixinHierarchy instance', function() {
 				expect(superclass(Superclass).withMixins()).to.not.be.an.instanceof(MixinHierarchy)
@@ -39,10 +42,14 @@ describe('MixinHierarchy', function() {
 
 	})
 
-	const Mixin1 = superclass => class Mixin1 extends superclass {}
-	const Mixin2 = superclass => class Mixin2 extends superclass {}
-
 	describe('superclass().withMixins()', function() {
+		let Superclass, Mixin1, Mixin2
+
+		before(function() {
+			Superclass = class {}
+			Mixin1 = superclass => class Mixin1 extends superclass {}
+			Mixin2 = superclass => class Mixin2 extends superclass {}
+		})
 
 		it('should return the passed superclass', function() {
 			expect(superclass(Superclass).withMixins()).to.equal(Superclass)
@@ -64,10 +71,16 @@ describe('MixinHierarchy', function() {
 
 	})
 
-	const Subclass1 = class extends superclass(Superclass).withMixins(Mixin1) {}
-	const Subclass2 = class extends superclass(Superclass).withMixins(Mixin1, Mixin2) {}
-
 	describe('class extends superclass().withMixins()', function() {
+		let Superclass, Mixin1, Mixin2, Subclass1, Subclass2
+
+		before(function() {
+			Superclass = class {}
+			Mixin1 = superclass => class Mixin1 extends superclass {}
+			Mixin2 = superclass => class Mixin2 extends superclass {}
+			Subclass1 = class extends superclass(Superclass).withMixins(Mixin1) {}
+			Subclass2 = class extends superclass(Superclass).withMixins(Mixin1, Mixin2) {}
+		})
 
 		it('should create instances of the derived class with one mixin', function() {
 			expect(new Subclass1).to.be.an.instanceof(Subclass1)
