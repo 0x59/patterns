@@ -1,5 +1,5 @@
 
-//import _ from './utility.js'
+import { util as _ } from './utility.js'
 import { Symbols } from './module-symbols.js'
 
 const
@@ -17,10 +17,17 @@ const
 		$_makeSubscription,
 		$_topics,
 		$_subscribers,
-		$_data
+		$_data,
+		$_publish,
+		$_subscribe
 	} = $
 
 const PubSubMixin = ( superclass ) => class extends superclass {
+
+	constructor( ...args ) {
+		super(...args)
+		this[$_initTopics]()
+	}
 
 	publish( topicId, data, sync = false ) {
 		if( _.nStr(topicId) ) {
@@ -60,16 +67,16 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 
 	[$_initTopics]() {
 		if( !this[$_topics] ) {
-			this[$_topics] = new Map()
+			this[$_topics] = this[$_makeTopic]()
 		}
 	}
 
-	[$_addTopic]( topic, initialData ) {
-		if( !this[$_topics].has(topic) ) {
-			this[$_topics].set(topic, this[$_makeTopic](initialData))
+	[$_addTopic]( topic, topicId, initialData ) {
+		if( !topic.has(topicId) ) {
+			topic.set(topicId, this[$_makeTopic](initialData))
 		}
 
-		return this[$_topics].get(topic)
+		return topic.get(topicId)
 	}
 
 	[$_makeTopic]( data ) {
@@ -80,21 +87,25 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 	}
 
 	[$_publish]( args ) {
-		const { topicIds, topic, idIndex } = args
+		const
+			{ topicIds, topic, idIndex } = args,
+			tLen = topicIds.length
 
-		if( topicIds.length > idIndex ) {
+		if( !(idIndex === 0 && tLen === 1 && topicIds[0] === '')
+			&& tLen > idIndex ) {
+		
 			const topicId = topicIds[idIndex]
 			let nextTopic
 
 			if( !topic.has(topicId) ) {
-				nextTopic = this[$_addTopic](topicId)
+				nextTopic = this[$_addTopic](topic, topicId)
 			
 			} else {
 				nextTopic = topic.get(topicId)
 			}
 
 			this[$_publish]({ ...args, 
-				idIndex: index + 1,
+				idIndex: idIndex + 1,
 				topic: nextTopic
 			})
 		}
@@ -103,9 +114,9 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 			topicId = topicIds.slice(0, idIndex).join(TOPIC_DEL),
 			{ data } = args
 
-		topic[$_data] = data
+		topic.set($_data, data)
 
-		for( const sub of topic[$_subscribers] ) {
+		for( const sub of topic.get($_subscribers) ) {
 			if( sub.active ) {
 				sub.fn(topicId, data)
 			}
@@ -125,7 +136,7 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 	}
 
 	[$_makeUnsubscribe]( topic, token ) {
-		return () => topic[$_subscribers].delete(token)
+		return () => topic.get($_subscribers).delete(token)
 	}
 
 	[$_makeAsyncSubscriber]( fn ) {
@@ -144,11 +155,11 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 			token = Symbol(),
 			subscriber = this[$_makeSubscriber](fn, sync, active)
 		
-		topic[$_subscribers].set(token, subscriber)
+		topic.get($_subscribers).set(token, subscriber)
 
 		if( sendLastMessage ) {
 			const topicId = topicIds.slice(0, idIndex).join(TOPIC_DEL)
-			subscriber.fn(topicId, topic[$_data])
+			subscriber.fn(topicId, topic.get($_data))
 		}
 
 		return {
@@ -160,9 +171,13 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 	}
 
 	[$_subscribe]( args ) {
-		const { topicIds, idIndex } = args
+		const
+			{ topicIds, idIndex } = args,
+			tLen = topicIds.length
 
-		if( topicIds.length <= idIndex ) {
+		if( (idIndex === 0 && tLen === 1 && topicIds[0] === '')
+			|| topicIds.length <= idIndex ) {
+
 			return this[$_makeSubscription](args)
 
 		} else {
@@ -172,7 +187,7 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 				topicId = topicIds[idIndex]
 
 			if( !topic.has(topicId) ) {
-				nextTopic = this[$_addTopic](topicId)
+				nextTopic = this[$_addTopic](topic, topicId)
 
 			} else {
 				nextTopic = topic.get(topicId)
@@ -187,5 +202,5 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 
 }
 
-export { PubSubMixin }
+export { PubSubMixin, $ }
 
