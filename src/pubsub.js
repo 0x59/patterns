@@ -5,21 +5,22 @@ import { Symbols } from './module-symbols.js'
 const
 	TOPIC_DEL = '/',
 	$ = Symbols(), {
-		$_initTopics,
 		$_addTopic,
-		$_makeTopic,
-		$_makeOn,
-		$_makeOff,
-		$_makeToggle,
-		$_makeUnsubscribe,
+		$_checkAndExecuteSubscriber,
+		$_data,
+		$_initTopics,
 		$_makeAsyncSubscriber,
+		$_makeControl,
+		$_makeUnsubscribe,
 		$_makeSubscriber,
 		$_makeSubscription,
-		$_topics,
-		$_subscribers,
-		$_data,
+		$_makeTopic,
 		$_publish,
-		$_subscribe
+		$_publishSync,
+		$_subscribe,
+		$_subscribers,
+		$_topics,
+		$_topicIdByIndex
 	} = $
 
 const PubSubMixin = ( superclass ) => class extends superclass {
@@ -27,9 +28,10 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 	constructor( ...args ) {
 		super(...args)
 		this[$_initTopics]()
+		this[$_publishSync] = {}
 	}
 
-	publish( topicId, data, sync = false ) {
+	publish( topicId, data, ...sync ) {
 		if( _.nStr(topicId) ) {
 			throw new Error('Topic identifier required to publish')
 		}
@@ -38,7 +40,16 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 			topicIds = topicId.split(TOPIC_DEL),
 			args = { topicIds, data, idIndex: 0, topic: this[$_topics] }
 
-		if( sync ) {
+		let executeNow
+
+		if( sync.length ) {
+			executeNow = this[$_publishSync][topicId] = !!sync[0]
+	
+		} else {
+			executeNow = this[$_publishSync][topicId]
+		}
+
+		if( executeNow ) {
 			this[$_publish](args)
 
 		} else {
@@ -111,28 +122,24 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 		}
 
 		const
-			topicId = topicIds.slice(0, idIndex).join(TOPIC_DEL),
+			topicId = this[$_topicIdByIndex](topicIds, idIndex),
 			{ data } = args
 
 		topic.set($_data, data)
 
-		for( const sub of topic.get($_subscribers) ) {
+		for( const [ sym, sub ] of topic.get($_subscribers) ) {
 			if( sub.active ) {
 				sub.fn(topicId, data)
 			}
 		}
 	}
 
-	[$_makeOn]( subscriber, token ) {
-		return () => subscriber.active = true
-	}
-
-	[$_makeOff]( subscriber, token ) {
-		return () => subscriber.active = false 
-	}
-
-	[$_makeToggle]( subscriber, token ) {
-		return () => subscriber.active = !subscriber.active
+	[$_makeControl]( args ) {
+		return () => {
+				const { subscriber, topicIds, idIndex, topic, active } = args
+				subscriber.active = active === null ? !subscriber.active : !!active
+				this[$_checkAndExecuteSubscriber](subscriber, topicIds, idIndex, topic)
+			}
 	}
 
 	[$_makeUnsubscribe]( topic, token ) {
@@ -143,29 +150,37 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 		return ( topicId, data ) => setTimeout(fn.bind(null, topicId, data))
 	}
 
-	[$_makeSubscriber]( subFn, sync, active ) {
+	[$_makeSubscriber]( subFn, sync, active, sendLastMessage ) {
 		const fn = sync ? subFn : this[$_makeAsyncSubscriber](subFn)
 
-		return { active, fn }
+		return { active, sendLastMessage, fn }
+	}
+
+	[$_topicIdByIndex]( topicIds, idIndex ) {
+		return topicIds.slice(0, idIndex).join(TOPIC_DEL)
+	}
+
+	[$_checkAndExecuteSubscriber]( subscriber, topicIds, idIndex, topic ) {
+		if( subscriber.active && subscriber.sendLastMessage) {
+			const topicId = this[$_topicIdByIndex](topicIds, idIndex)
+			subscriber.fn(topicId, topic.get($_data))
+		}
 	}
 
 	[$_makeSubscription]( args ) {
 		const
-			{ fn, sync, sendLastMessage, active, topic } = args,
+			{ topicIds, fn, sync, sendLastMessage, active, topic, idIndex } = args,
 			token = Symbol(),
-			subscriber = this[$_makeSubscriber](fn, sync, active)
+			subscriber = this[$_makeSubscriber](fn, sync, active, sendLastMessage)
 		
 		topic.get($_subscribers).set(token, subscriber)
 
-		if( sendLastMessage ) {
-			const topicId = topicIds.slice(0, idIndex).join(TOPIC_DEL)
-			subscriber.fn(topicId, topic.get($_data))
-		}
-
+		this[$_checkAndExecuteSubscriber](subscriber, topicIds, idIndex, topic)
+		
 		return {
-			on: this[$_makeOn](subscriber, token),
-			off: this[$_makeOff](subscriber, token),
-			toggle: this[$_makeToggle](subscriber, token),
+			on: this[$_makeControl]({ subscriber, topicIds, idIndex, topic, active: true }),
+			off: this[$_makeControl]({ subscriber, topicIds, idIndex, topic, active: false }),
+			toggle: this[$_makeControl]({ subscriber, topicIds, idIndex, topic, active: null }),
 			unsubscribe: this[$_makeUnsubscribe](subscriber, token)
 		}
 	}
