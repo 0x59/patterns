@@ -7,14 +7,16 @@ const
 	$ = Symbols(), {
 		$_addTopic,
 		$_checkAndExecuteSubscriber,
-		$_data,
+		$_message,
 		$_initTopics,
+		$_makeAsyncPublisher,
 		$_makeAsyncSubscriber,
 		$_makeControl,
-		$_makeUnsubscribe,
+		$_makeMessage,
 		$_makeSubscriber,
 		$_makeSubscription,
 		$_makeTopic,
+		$_makeUnsubscribe,
 		$_publish,
 		$_publishSync,
 		$_subscribe,
@@ -53,11 +55,18 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 			this[$_publish](args)
 
 		} else {
-			setTimeout(this[$_publish].bind(this, args))
+			let timeoutId,
+				pubFn = this[$_makeAsyncPublisher](args)
+
+			const promise = new Promise(( resolve, reject ) => {
+				timeoutId = setTimeout(pubFn, 0, resolve, reject)
+			})
+
+			return { promise, timeoutId }
 		}
 	}
 
-	subscribe( topicId, fn, sync = false, sendLastMessage = false, active = true ) {
+	subscribe( topicId, fn, sync = false, sendAvailableMessage = false, active = true ) {
 		if( _.nStr(topicId) ) {
 			throw new Error('Topic identifier required to subscribe')
 		}
@@ -68,12 +77,19 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 
 		const
 			topicIds = topicId.split(TOPIC_DEL),
-			args = { topicIds, fn, sync, sendLastMessage, active,
+			args = { topicIds, fn, sync, sendAvailableMessage, active,
 				idIndex: 0,
 				topic: this[$_topics]
 			}
 
 		return this[$_subscribe](args)
+	}
+
+	[$_makeAsyncPublisher]( args ) {
+		return ( resolve, reject ) => {
+				this[$_publish](args)
+				resolve()
+			}
 	}
 
 	[$_initTopics]() {
@@ -82,19 +98,25 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 		}
 	}
 
-	[$_addTopic]( topic, topicId, initialData ) {
+	[$_addTopic]( topic, topicId, initialMessage ) {
 		if( !topic.has(topicId) ) {
-			topic.set(topicId, this[$_makeTopic](initialData))
+			topic.set(topicId, this[$_makeTopic](initialMessage))
 		}
 
 		return topic.get(topicId)
 	}
 
-	[$_makeTopic]( data ) {
+	[$_makeTopic]( initialMessage ) {
 		return new Map([
-			[ $_data, data ],
+			[ $_message, initialMessage ],
 			[ $_subscribers, new Map() ]
 		])
+	}
+
+	[$_makeMessage]( payload ) {
+		return {
+			payload
+		}
 	}
 
 	[$_publish]( args ) {
@@ -125,7 +147,7 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 			topicId = this[$_topicIdByIndex](topicIds, idIndex),
 			{ data } = args
 
-		topic.set($_data, data)
+		topic.set($_message, this[$_makeMessage](data))
 
 		for( const [ sym, sub ] of topic.get($_subscribers) ) {
 			if( sub.active ) {
@@ -150,10 +172,10 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 		return ( topicId, data ) => setTimeout(fn.bind(null, topicId, data))
 	}
 
-	[$_makeSubscriber]( subFn, sync, active, sendLastMessage ) {
+	[$_makeSubscriber]( subFn, sync, active, sendAvailableMessage ) {
 		const fn = sync ? subFn : this[$_makeAsyncSubscriber](subFn)
 
-		return { active, sendLastMessage, fn }
+		return { active, sendAvailableMessage, fn }
 	}
 
 	[$_topicIdByIndex]( topicIds, idIndex ) {
@@ -161,17 +183,21 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 	}
 
 	[$_checkAndExecuteSubscriber]( subscriber, topicIds, idIndex, topic ) {
-		if( subscriber.active && subscriber.sendLastMessage) {
-			const topicId = this[$_topicIdByIndex](topicIds, idIndex)
-			subscriber.fn(topicId, topic.get($_data))
+		if( subscriber.active && subscriber.sendAvailableMessage ) {
+			const message = topic.get($_message)
+
+			if( message ) {
+				const topicId = this[$_topicIdByIndex](topicIds, idIndex)
+				subscriber.fn(topicId, message.payload)
+			}
 		}
 	}
 
 	[$_makeSubscription]( args ) {
 		const
-			{ topicIds, fn, sync, sendLastMessage, active, topic, idIndex } = args,
+			{ topicIds, fn, sync, sendAvailableMessage, active, topic, idIndex } = args,
 			token = Symbol(),
-			subscriber = this[$_makeSubscriber](fn, sync, active, sendLastMessage)
+			subscriber = this[$_makeSubscriber](fn, sync, active, sendAvailableMessage)
 		
 		topic.get($_subscribers).set(token, subscriber)
 
