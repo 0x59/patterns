@@ -29,6 +29,10 @@ const util = {
 		return typeof fn !== FN
 	},
 
+	nObj( obj ) {
+		return typeof obj !== OBJ
+	},
+
 	isDef( val ) {
 		return typeof val !== UNDEF
 	},

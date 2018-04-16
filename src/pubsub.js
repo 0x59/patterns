@@ -12,61 +12,129 @@ const
 		$_makeAsyncPublisher,
 		$_makeAsyncSubscriber,
 		$_makeControl,
+		$_makeDefaultPublishSettings,
+		$_makeDefaultSubscribeSettings,
 		$_makeMessage,
+		$_makePromisePublisher,
+		$_makePromiseSubscriber,
 		$_makeSubscriber,
 		$_makeSubscription,
 		$_makeTopic,
 		$_makeUnsubscribe,
+		$_promiseSubscriber,
 		$_publish,
-		$_publishSync,
+		$_publishSettings,
 		$_subscribe,
 		$_subscribers,
 		$_topics,
-		$_topicIdByIndex
+		$_topicIdByIndex,
+		$_validatePublishSettings,
+		$_validateSubscribeSettings
 	} = $
 
-const PubSubMixin = ( superclass ) => class extends superclass {
+const PubSubMixin = ( superclass ) => class PubSubMixin extends superclass {
+
+	static [$_makeDefaultPublishSettings]() {
+		return {
+				usePromise: true,
+				sync: false
+			}
+	}
+
+	static [$_validatePublishSettings]( o ) {
+		const ret = {}
+		
+		if( 'usePromise' in o ) {
+			ret.usePromise = !!o.usePromise
+		}
+
+		if( 'sync' in o ) {
+			ret.sync = !!o.sync
+		}
+
+		return ret
+	}
+
+	static [$_makeDefaultSubscribeSettings]() {
+		return {
+				usePromise: true,
+				sync: false,
+				sendAvailableMessage: false,
+				active: true
+			}
+	}
+
+	static [$_validateSubscribeSettings]( o ) {
+		const ret = {}
+		
+		if( 'usePromise' in o ) {
+			ret.usePromise = !!o.usePromise
+		}
+
+		if( 'sync' in o ) {
+			ret.sync = !!o.sync
+		}
+		
+		if( 'sendAvailableMessage' in o ) {
+			ret.sendAvailableMessage = !!o.sendAvailableMessage
+		}
+
+		if( 'active' in o ) {
+			ret.active = !!o.active
+		}
+
+		return ret
+	}
 
 	constructor( ...args ) {
 		super(...args)
 		this[$_initTopics]()
-		this[$_publishSync] = {}
+		this[$_publishSettings] = {}
 	}
 
-	publish( topicId, data, ...sync ) {
+	publish( topicId, data, settings ) {
 		if( _.nStr(topicId) ) {
-			throw new Error('Topic identifier required to publish')
+			throw new Error('Topic (string) identifier required to publish')
 		}
+
+		if( settings && _.nObj(settings) ) {
+			throw new Error('Settings must be an object to publish')
+		}
+
+		if( !this[$_publishSettings][topicId] ) {
+			this[$_publishSettings][topicId] = PubSubMixin[$_makeDefaultPublishSettings]()
+		}
+
+		if( settings ) {
+			Object.assign(this[$_publishSettings][topicId], PubSubMixin[$_validatePublishSettings](settings))
+		}
+
+		let	{	sync,
+				usePromise
+			} = this[$_publishSettings][topicId],
+			promise = null,
+			timeoutId = null
 
 		const
 			topicIds = topicId.split(TOPIC_DEL),
 			args = { topicIds, data, idIndex: 0, topic: this[$_topics] }
 
-		let executeNow
+		if( sync ) {
+			return this[$_publish](args)
 
-		if( sync.length ) {
-			executeNow = this[$_publishSync][topicId] = !!sync[0]
-	
-		} else {
-			executeNow = this[$_publishSync][topicId]
-		}
-
-		if( executeNow ) {
-			this[$_publish](args)
-
-		} else {
-			let timeoutId,
-				pubFn = this[$_makeAsyncPublisher](args)
-
-			const promise = new Promise(( resolve, reject ) => {
-				timeoutId = setTimeout(pubFn, 0, resolve, reject)
+		} else if( usePromise ) {
+			promise = new Promise(( resolve ) => {
+				timeoutId = setTimeout(() => resolve(this[$_publish](args)))
 			})
 
-			return { promise, timeoutId }
+		} else {
+			timeoutId = setTimeout(this[$_publish].bind(this, args))
 		}
+
+		return { promise, timeoutId }
 	}
 
-	subscribe( topicId, fn, sync = false, sendAvailableMessage = false, active = true ) {
+	subscribe( topicId, fn, settings ) {
 		if( _.nStr(topicId) ) {
 			throw new Error('Topic identifier required to subscribe')
 		}
@@ -75,21 +143,26 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 			throw new Error('Function required to subscribe')
 		}
 
+		let validatedSettings = {}
+
+		if( settings ) {
+			if( _.nObj(settings) ) {
+				throw new Error('Settings must be an object to subscribe')
+			}
+			
+			Object.assign(validatedSettings, 
+				PubSubMixin[$_makeDefaultSubscribeSettings](),
+				PubSubMixin[$_validateSubscribeSettings](settings))
+		}
+
 		const
 			topicIds = topicId.split(TOPIC_DEL),
-			args = { topicIds, fn, sync, sendAvailableMessage, active,
+			args = { topicIds, fn, ...validatedSettings,
 				idIndex: 0,
 				topic: this[$_topics]
 			}
 
 		return this[$_subscribe](args)
-	}
-
-	[$_makeAsyncPublisher]( args ) {
-		return ( resolve, reject ) => {
-				this[$_publish](args)
-				resolve()
-			}
 	}
 
 	[$_initTopics]() {
@@ -122,7 +195,8 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 	[$_publish]( args ) {
 		const
 			{ topicIds, topic, idIndex } = args,
-			tLen = topicIds.length
+			tLen = topicIds.length,
+			artifacts = []
 
 		if( !(idIndex === 0 && tLen === 1 && topicIds[0] === '')
 			&& tLen > idIndex ) {
@@ -137,10 +211,10 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 				nextTopic = topic.get(topicId)
 			}
 
-			this[$_publish]({ ...args, 
+			artifacts.push(...this[$_publish]({ ...args, 
 				idIndex: idIndex + 1,
 				topic: nextTopic
-			})
+			}))
 		}
 
 		const
@@ -151,9 +225,16 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 
 		for( const [ sym, sub ] of topic.get($_subscribers) ) {
 			if( sub.active ) {
-				sub.fn(topicId, data)
+				if( sub.usePromise && !sub.sync ) {
+					artifacts.push(sub.fn(topicId, data))
+
+				} else {
+					sub.fn(topicId, data)
+				}
 			}
 		}
+
+		return artifacts
 	}
 
 	[$_makeControl]( args ) {
@@ -169,13 +250,34 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 	}
 
 	[$_makeAsyncSubscriber]( fn ) {
-		return ( topicId, data ) => setTimeout(fn.bind(null, topicId, data))
+		return ( topicId, data ) => setTimeout(fn, 0, topicId, data)
 	}
 
-	[$_makeSubscriber]( subFn, sync, active, sendAvailableMessage ) {
-		const fn = sync ? subFn : this[$_makeAsyncSubscriber](subFn)
+	[$_makePromiseSubscriber]( fn ) {
+		return this[$_promiseSubscriber].bind(this, fn)
+	}
 
-		return { active, sendAvailableMessage, fn }
+	[$_promiseSubscriber]( fn, topicId, data ) {
+		let timeoutId
+		const promise = new Promise(( resolve ) => {
+			timeoutId = setTimeout(resolve, 0, data)
+		})
+
+		const artifacts = { promise, timeoutId }
+
+		fn(topicId, artifacts)
+
+		return artifacts
+	}
+
+	[$_makeSubscriber]( args ) {
+		const
+			{ fn: subFn, usePromise, sync, active, sendAvailableMessage } = args,
+			fn = sync ? subFn :	usePromise
+				? this[$_makePromiseSubscriber](subFn)
+				: this[$_makeAsyncSubscriber](subFn)
+
+		return { usePromise, sync, active, sendAvailableMessage, fn }
 	}
 
 	[$_topicIdByIndex]( topicIds, idIndex ) {
@@ -195,14 +297,15 @@ const PubSubMixin = ( superclass ) => class extends superclass {
 
 	[$_makeSubscription]( args ) {
 		const
-			{ topicIds, fn, sync, sendAvailableMessage, active, topic, idIndex } = args,
+			{	topicIds, fn, usePromise, sync, sendAvailableMessage,
+				active, topic, idIndex } = args,
 			token = Symbol(),
-			subscriber = this[$_makeSubscriber](fn, sync, active, sendAvailableMessage)
-		
+			subscriber = this[$_makeSubscriber]({ fn, usePromise, sync, active, sendAvailableMessage })
+
 		topic.get($_subscribers).set(token, subscriber)
 
 		this[$_checkAndExecuteSubscriber](subscriber, topicIds, idIndex, topic)
-		
+
 		return {
 			on: this[$_makeControl]({ subscriber, topicIds, idIndex, topic, active: true }),
 			off: this[$_makeControl]({ subscriber, topicIds, idIndex, topic, active: false }),
