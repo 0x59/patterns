@@ -71,17 +71,17 @@ const util = {
 		return true
 	},
 
-	hasOwnBooleans( o, filter ) {
-		let result = {}
+	hasOwnBooleans( o, props ) {
+		const result = {}
 
 		if( util.nObj(o) ) throw new Error('Not an object')
 
-		if( filter ) {
-			if( !util.isArrayOf(filter, STR) ) {
-				throw new Error('Filter not array of strings')
+		if( props ) {
+			if( !util.isArrayOf(props, STR) ) {
+				throw new Error('Props not array of strings')
 			}
 
-			for( const k of filter ) {
+			for( const k of props ) {
 				if( Object.prototype.hasOwnProperty.call(o, k) ) result[k] = !!o[k]
 			}
 
