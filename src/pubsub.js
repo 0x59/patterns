@@ -36,54 +36,26 @@ const PubSubMixin = ( superclass ) => class PubSubMixin extends superclass {
 
 	static [$_makeDefaultPublishSettings]() {
 		return {
-				usePromise: true,
-				sync: false
-			}
+			usePromise: true,
+			sync: false
+		}
 	}
 
 	static [$_validatePublishSettings]( o ) {
-		const ret = {}
-		
-		if( 'usePromise' in o ) {
-			ret.usePromise = !!o.usePromise
-		}
-
-		if( 'sync' in o ) {
-			ret.sync = !!o.sync
-		}
-
-		return ret
+		return _.hasOwnBooleans(o, [ 'usePromise', 'sync' ])
 	}
 
 	static [$_makeDefaultSubscribeSettings]() {
 		return {
-				usePromise: true,
-				sync: false,
-				sendAvailableMessage: false,
-				active: true
-			}
+			usePromise: true,
+			sync: false,
+			sendAvailableMessage: false,
+			active: true
+		}
 	}
 
 	static [$_validateSubscribeSettings]( o ) {
-		const ret = {}
-		
-		if( 'usePromise' in o ) {
-			ret.usePromise = !!o.usePromise
-		}
-
-		if( 'sync' in o ) {
-			ret.sync = !!o.sync
-		}
-		
-		if( 'sendAvailableMessage' in o ) {
-			ret.sendAvailableMessage = !!o.sendAvailableMessage
-		}
-
-		if( 'active' in o ) {
-			ret.active = !!o.active
-		}
-
-		return ret
+		return _.hasOwnBooleans(o, [ 'usePromise', 'sync', 'sendAvailableMessage', 'active' ])
 	}
 
 	constructor( ...args ) {
@@ -239,10 +211,10 @@ const PubSubMixin = ( superclass ) => class PubSubMixin extends superclass {
 
 	[$_makeControl]( args ) {
 		return () => {
-				const { subscriber, topicIds, idIndex, topic, active } = args
-				subscriber.active = active === null ? !subscriber.active : !!active
-				this[$_checkAndExecuteSubscriber](subscriber, topicIds, idIndex, topic)
-			}
+			const { subscriber, topicIds, idIndex, topic, active } = args
+			subscriber.active = active === null ? !subscriber.active : !!active
+			this[$_checkAndExecuteSubscriber](subscriber, topicIds, idIndex, topic)
+		}
 	}
 
 	[$_makeUnsubscribe]( topic, token ) {
@@ -297,19 +269,21 @@ const PubSubMixin = ( superclass ) => class PubSubMixin extends superclass {
 
 	[$_makeSubscription]( args ) {
 		const
-			{	topicIds, fn, usePromise, sync, sendAvailableMessage,
-				active, topic, idIndex } = args,
+			{ topicIds, fn, usePromise, sync, sendAvailableMessage,
+			active, topic, idIndex } = args,
 			token = Symbol(),
 			subscriber = this[$_makeSubscriber]({ fn, usePromise, sync, active, sendAvailableMessage })
 
 		topic.get($_subscribers).set(token, subscriber)
 
 		this[$_checkAndExecuteSubscriber](subscriber, topicIds, idIndex, topic)
+		
+		const ctrlArgs = { subscriber, topicIds, idIndex, topic, active: true }
 
 		return {
-			on: this[$_makeControl]({ subscriber, topicIds, idIndex, topic, active: true }),
-			off: this[$_makeControl]({ subscriber, topicIds, idIndex, topic, active: false }),
-			toggle: this[$_makeControl]({ subscriber, topicIds, idIndex, topic, active: null }),
+			on: this[$_makeControl](ctrlArgs),
+			off: this[$_makeControl](( ctrlArgs.active = false, ctrlArgs )),
+			toggle: this[$_makeControl](( ctrlArgs.active = null, ctrlArgs )),
 			unsubscribe: this[$_makeUnsubscribe](subscriber, token)
 		}
 	}

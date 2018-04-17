@@ -55,6 +55,43 @@ const util = {
 
 	nEl( el ) {
 		return !(el instanceof HTMLElement)
+	},
+
+	nArr( arr ) {
+		return !Array.isArray(arr)
+	},
+
+	isArrayOf( arr, type ) {
+		if( util.nArr(arr) ) throw new Error('Not an array')
+		if( util.nStr(type) ) throw new Error('Not a string')
+
+		for( const v of arr ) {
+			if( typeof v !== type ) return false
+		}
+		return true
+	},
+
+	hasOwnBooleans( o, filter ) {
+		let result = {}
+
+		if( util.nObj(o) ) throw new Error('Not an object')
+
+		if( filter ) {
+			if( !util.isArrayOf(filter, STR) ) {
+				throw new Error('Filter not array of strings')
+			}
+
+			for( const k of filter ) {
+				if( Object.prototype.hasOwnProperty.call(o, k) ) result[k] = !!o[k]
+			}
+
+		} else {
+			for( const k of Object.keys(o) ) {
+				result[k] = !!o[k]
+			}
+		}
+
+		return result
 	}
 	
 }
