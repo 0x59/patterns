@@ -65,13 +65,8 @@ const PubSubMixin = ( superclass ) => class PubSubMixin extends superclass {
 	}
 
 	publish( topicId, data, settings ) {
-		if( _.nStr(topicId) ) {
-			throw new Error('Topic (string) identifier required to publish')
-		}
-
-		if( settings && _.nObj(settings) ) {
-			throw new Error('Settings must be an object to publish')
-		}
+		_.nStr(topicId, 'Topic identifier required to publish')
+		settings && _.nObj(settings, 'Settings must be an object to publish')
 
 		if( !this[$_publishSettings][topicId] ) {
 			this[$_publishSettings][topicId] = PubSubMixin[$_makeDefaultPublishSettings]()
@@ -81,8 +76,7 @@ const PubSubMixin = ( superclass ) => class PubSubMixin extends superclass {
 			Object.assign(this[$_publishSettings][topicId], PubSubMixin[$_validatePublishSettings](settings))
 		}
 
-		let	{	sync,
-				usePromise
+		let	{ sync,	usePromise,
 			} = this[$_publishSettings][topicId],
 			promise = null,
 			timeoutId = null
@@ -107,20 +101,13 @@ const PubSubMixin = ( superclass ) => class PubSubMixin extends superclass {
 	}
 
 	subscribe( topicId, fn, settings ) {
-		if( _.nStr(topicId) ) {
-			throw new Error('Topic identifier required to subscribe')
-		}
-
-		if( _.nFn(fn) ) {
-			throw new Error('Function required to subscribe')
-		}
+		_.nStr(topicId, 'Topic identifier required to subscribe')
+		_.nFn(fn, 'Function required to subscribe')
 
 		let validatedSettings = {}
 
 		if( settings ) {
-			if( _.nObj(settings) ) {
-				throw new Error('Settings must be an object to subscribe')
-			}
+			_.nObj(settings, 'Settings must be an object to subscribe')
 			
 			Object.assign(validatedSettings, 
 				PubSubMixin[$_makeDefaultSubscribeSettings](),

@@ -14,72 +14,119 @@ const
 		copyright: '\u00a9',
 		asterisk: '\u002a'
 	},
+	INVALID_ARGUMENT = 'Invalid argument.',
 	doc = document,
 	body = doc.body
+
+class InvalidType extends Error {}
+
+function __throwIs( type, msg = '' ) {
+	throw new InvalidType(`Invalid type. Expected: [${type}];${msg ? ' '+msg : ''}`)
+}
+
+function __throwNot( type, msg = '' ) {
+	throw new InvalidType(`Invalid type. Not expected: [${type}];${msg ? ' '+msg : ''}`)
+}
 
 const { STR, FN, OBJ, NUM, BOOL, SYM, UNDEF } = TYPES
 
 const util = {
 
-	isFn( fn ) {
-		return typeof fn === FN
+	isFn( fn, msg ) {
+		const t = typeof fn === FN
+		return t ? t : msg ? __throwIs(FN, msg) : t
 	},
 	
-	nFn( fn ) {
-		return typeof fn !== FN
-	},
-
-	nObj( obj ) {
-		return typeof obj !== OBJ
-	},
-
-	isDef( val ) {
-		return typeof val !== UNDEF
-	},
-
-	nDef( val ) {
-		return typeof val === UNDEF
-	},
-
-	isStr( arg ) {
-		return typeof arg === STR
+	nFn( fn, msg ) {
+		const t = typeof fn !== FN
+		return t ? msg ? __throwIs(FN, msg) : t : t
 	},
 	
-	nStr( arg ) {
-		return typeof arg !== STR
+	isObj( obj, msg ) {
+		const t = typeof obj === OBJ
+		return t ? t : msg ? __throwIs(OBJ, msg) : t
+	},
+
+	nObj( obj, msg ) {
+		const t = typeof obj !== OBJ
+		return t ? msg ? __throwIs(OBJ, msg) : t : t
+	},
+
+	isDef( val, msg ) {
+		const t = typeof val !== UNDEF
+		return t ? t : msg ? __throwNot(UNDEF, msg) : t
+	},
+
+	nDef( val, msg ) {
+		const t = typeof val === UNDEF
+		return t ? msg ? __throwNot(UNDEF, msg) : t : t
+	},
+
+	isStr( arg, msg ) {
+		const t = typeof arg === STR
+		return t ? t : msg ? __throwIs(STR, msg) : t
+	},
+	
+	nStr( arg, msg ) {
+		const t = typeof arg !== STR
+		return t ? msg ? __throwIs(STR, msg) : t : t
 	},
 
 	isEl( el ) {
-		return el instanceof HTMLElement
+		const t = el instanceof HTMLElement
+		return t ? t : msg ? __throwIs('HTMLElement', msg) : t
 	},
 
 	nEl( el ) {
-		return !(el instanceof HTMLElement)
+		const t = !(el instanceof HTMLElement)
+		return t ? msg ? __throwIs('HTMLElement', msg) : t : t
 	},
 
-	nArr( arr ) {
-		return !Array.isArray(arr)
+	isArr( arr, msg ) {
+		const t = Array.isArray(arr)
+		return t ? t : msg ? __throwIs('Array', msg) : t
 	},
 
-	isArrayOf( arr, type ) {
-		if( util.nArr(arr) ) throw new Error('Not an array')
-		if( util.nStr(type) ) throw new Error('Not a string')
+	nArr( arr, msg ) {
+		const t = !Array.isArray(arr)
+		return t ? msg ? __throwIs('Array', msg) : t : t
+	},
 
+	isArrayOf( arr, type, msg ) {
+		util.nArr(arr, INVALID_ARGUMENT)
+		util.nStr(type, INVALID_ARGUMENT)
+		
+		let t = true
 		for( const v of arr ) {
-			if( typeof v !== type ) return false
+			if( typeof v !== type ) {
+				t = false
+				break
+			}
 		}
-		return true
+		return t ? t : msg ? __throwIs(type, msg) : t
+	},
+
+	nArrayOf( arr, type, msg ) {
+		util.nArr(arr, INVALID_ARGUMENT)
+		util.nStr(type, INVALID_ARGUMENT)
+
+		let t = true
+		for( const v of arr ) {
+			if( typeof v === type ) {
+				t = false
+				break
+			}
+		}
+		return t ? msg ? __throwIs(type, msg) : t : t
 	},
 
 	hasOwnBooleans( o, props ) {
 		const result = {}
 
-		if( util.nObj(o) ) throw new Error('Not an object')
+		util.nObj(o, INVALID_ARGUMENT)
 
 		if( props ) {
-			if( !util.isArrayOf(props, STR) ) {
-				throw new Error('Props not array of strings')
-			}
+			util.isArrayOf(props, STR, INVALID_ARGUMENT)
 
 			for( const k of props ) {
 				if( Object.prototype.hasOwnProperty.call(o, k) ) result[k] = !!o[k]
@@ -103,6 +150,7 @@ Object.freeze(util)
 export { 
 	TYPES,
 	UCHAR,
-	util
+	util,
+	InvalidType
 }
 
