@@ -362,7 +362,7 @@ describe('PubSub Mixin', function() {
 
 		describe('Sync Publish, Async Subscribe', function() {
 
-			let Subclass, instance, message, subFn, subPromiseFn, checkMessageCount
+			let Subclass, instance, message, subFn, subPromiseFn, asyncExpectMessageCount
 
 			before(function() {
 				Subclass = class Subclass extends superclass(class {}).withMixins(PubSubMixin) {}
@@ -384,9 +384,9 @@ describe('PubSub Mixin', function() {
 							}
 							done()
 						}
-					})
+					}).catch(err => done(err))
 				}
-				checkMessageCount = ( count, done ) => {
+				asyncExpectMessageCount = ( count, done ) => {
 					expect(message.count).to.equal(count)
 					if( done ) done()
 				}
@@ -429,7 +429,7 @@ describe('PubSub Mixin', function() {
 					sendAvailableMessage: true,
 					active: false
 				})
-				setTimeout(checkMessageCount, 0, 0, done)
+				setTimeout(asyncExpectMessageCount, 0, 0, done)
 				expect(message.count).to.equal(0)
 			})
 
@@ -441,7 +441,7 @@ describe('PubSub Mixin', function() {
 					sendAvailableMessage: true,
 					active: false
 				})
-				setTimeout(checkMessageCount, 0, 0, done)
+				setTimeout(asyncExpectMessageCount, 0, 0, done)
 				expect(message.count).to.equal(0)
 			})
 
@@ -453,7 +453,7 @@ describe('PubSub Mixin', function() {
 					sendAvailableMessage: false,
 					active: true
 				})
-				setTimeout(checkMessageCount, 0, 0, done)
+				setTimeout(asyncExpectMessageCount, 0, 0, done)
 				expect(message.count).to.equal(0)
 			})
 
@@ -465,7 +465,7 @@ describe('PubSub Mixin', function() {
 					sendAvailableMessage: false,
 					active: true
 				})
-				setTimeout(checkMessageCount, 0, 0, done)
+				setTimeout(asyncExpectMessageCount, 0, 0, done)
 				expect(message.count).to.equal(0)
 			})
 
@@ -480,7 +480,7 @@ describe('PubSub Mixin', function() {
 				}) // 1
 				instance.publish('log', message, { sync: true }) // 2
 				instance.publish('log', message, { sync: true }) // 3 
-				setTimeout(checkMessageCount, 0, 3, done)
+				setTimeout(asyncExpectMessageCount, 0, 3, done)
 				expect(message.count).to.equal(0)
 			})
 
@@ -499,7 +499,7 @@ describe('PubSub Mixin', function() {
 					active: true
 				}) // 3
 				instance.publish('log', message, { sync: true }) // 4, 5
-				setTimeout(checkMessageCount, 0, 5, done)
+				setTimeout(asyncExpectMessageCount, 0, 5, done)
 				expect(message.count).to.equal(0)
 			})
 
@@ -513,16 +513,16 @@ describe('PubSub Mixin', function() {
 				})
 				instance.publish('log', message, { sync: true })
 
-				setTimeout(checkMessageCount, 0, 1, null)
+				setTimeout(asyncExpectMessageCount, 0, 1, null)
 				ctrl.toggle()
 
 				instance.publish('log', message, { sync: true })
 
-				setTimeout(checkMessageCount, 0, 1, null)
+				setTimeout(asyncExpectMessageCount, 0, 1, null)
 				ctrl.toggle()
 
 				instance.publish('log', message, { sync: true })
-				setTimeout(checkMessageCount, 0, 3, done)
+				setTimeout(asyncExpectMessageCount, 0, 3, done)
 			})
 		})
 
@@ -657,19 +657,19 @@ describe('PubSub Mixin', function() {
 				instance.publish('log', message, { sync: false }).promise.then(() => {
 					expect(message.count).to.equal(0)
 					ctrl.on()
-				})
+				}).catch(err => done(err))
 				instance.publish('log', message, { sync: false }).promise.then(() => {
 					expect(message.count).to.equal(1)
 					ctrl.off()
-				})
+				}).catch(err => done(err))
 				instance.publish('log', message, { sync: false }).promise.then(() => {
 					expect(message.count).to.equal(1)
 					done()
-				})
+				}).catch(err => done(err))
 				expect(message.count).to.equal(0)
 			})
 
-			it('should support turning subscriptions on/off and receiving the available message', function() {
+			it('should support turning subscriptions on/off and receiving the available message', function( done ) {
 				let ctrl = instance.subscribe('log', subFn.bind(null, null), { 
 					sync: true,
 					sendAvailableMessage: true,
@@ -678,41 +678,146 @@ describe('PubSub Mixin', function() {
 				instance.publish('log', message, { sync: false }).promise.then(() => {
 					ctrl.on()
 					expect(message.count).to.equal(1)
-				})
+				}).catch(err => done(err))
 				instance.publish('log', message, { sync: false }).promise.then(() => {
 					expect(message.count).to.equal(2)
 					ctrl.off()
-				})
+				}).catch(err => done(err))
 				instance.publish('log', message, { sync: false }).promise.then(() => {
 					expect(message.count).to.equal(2)
 					done()
-				})
+				}).catch(err => done(err))
 				expect(message.count).to.equal(0)
 			})
 
 		})
 		
-		describe('Async Publish, Async Subscribe', function() {
+		describe('Async Publish, (A)sync Subscribe', function() {
 
-			let Subclass, instance, message, subFn
+			let	Subclass, instance, message, subFn, subPromiseFn, asyncExpectMessageCount,
+				subOrderFn, subPromiseOrderFn, order
 
 			before(function() {
 				Subclass = class Subclass extends superclass(class {}).withMixins(PubSubMixin) {}
-				subFn = ( count, topicId, data ) => {
-					data.count += 1
-					if( count !== null ) {
-						expect(data.count).to.equal(count)
-					}
+				subFn = ( topicId, data ) => {
+					if( data ) data.count += 1
+				}
+				subPromiseFn = ( topicId, data ) => {
+					data.promise.then(data => subFn(topicId, data))
+				}
+				asyncExpectMessageCount = ( count, done ) => {
+					expect(message.count).to.equal(count)
+					if( done ) done()
+				}
+				subOrderFn = ( num, topicId, order ) => {
+					order.push(num)
+				}
+				subPromiseOrderFn = ( num, topicId, artifacts ) => {
+					artifacts.promise.then(order => subOrderFn(num, topicId, order))
 				}
 			})
 
 			beforeEach(function() {
 				instance = new Subclass()
 				message = { count: 0 }
+				order = []
 			})
 
-		})
+			it('should: 1) receive available message 2) provide publish promise 3) provide subscribe promise to subscriber 4) provide subscribe promise to publisher', function( done ) {
+				instance.publish('log', message, { sync: false }).promise.then(( artifacts ) => {
+					expect(artifacts).to.be.an('array').that.is.empty
+					instance.subscribe('log', subPromiseFn.bind(null), {
+						sync: false,
+						usePromise: true,
+						sendAvailableMessage: true,
+						active: true
+					})
+					instance.publish('log', message, { sync: false }).promise.then(( artifacts ) => {
+						expect(artifacts).to.have.length(1)
+						artifacts[0].promise.then(data => {
+							expect(data.count).to.equal(2)
+							done()
+						}).catch(err => done(err))
+					}).catch(err => done(err))
+				}).catch(err => done(err))
+				expect(message.count).to.equal(0)
+			})
+			
+			it('should provide promises to publisher for all promise-based subscribers', function( done ) {
+				const fn = subPromiseFn.bind(null)
+				instance.publish('log', message, { sync: false }).promise.then(( artifacts ) => {
+					expect(artifacts).to.be.an('array').that.is.empty
+					instance.subscribe('log', fn, {
+						sync: false,
+						usePromise: true,
+						sendAvailableMessage: true,
+						active: true
+					})
+					instance.subscribe('log', fn, {
+						sync: false,
+						usePromise: true,
+						sendAvailableMessage: true,
+						active: true
+					})
+					instance.subscribe('log', fn, {
+						sync: false,
+						usePromise: true,
+						sendAvailableMessage: true,
+						active: true
+					})
+					instance.publish('log', message, { sync: false }).promise.then(( artifacts ) => {
+						expect(artifacts).to.have.length(3)
+						Promise.all(artifacts.reduce(( p, v ) => p.push(v.promise) && p, [])).then(
+							( all ) => {
+								expect(all.length).to.equal(3)
+								done()
+							}
+						).catch(err => done(err))
+					}).catch(err => done(err))
+				}).catch(err => done(err))
+				expect(message.count).to.equal(0)
+			})
 
+			it('should execute subscribers ((a)sync and promise-based) in proper order', function( done ) {
+				instance.publish('log', order, { sync: false }).promise.then(( artifacts ) => {
+					expect(artifacts).to.be.an('array').that.is.empty
+					instance.subscribe('log', subOrderFn.bind(null, 3), {
+						sync: false,
+						usePromise: false,
+						sendAvailableMessage: false,
+						active: true
+					})
+					instance.subscribe('log', subPromiseOrderFn.bind(null, 4), {
+						sync: false,
+						usePromise: true,
+						sendAvailableMessage: false,
+						active: true
+					})
+					instance.subscribe('log', subOrderFn.bind(null, 2), {
+						sync: true,
+						usePromise: false,
+						sendAvailableMessage: false,
+						active: true
+					})
+					instance.subscribe('log', subOrderFn.bind(null, 1), {
+						sync: false,
+						usePromise: false,
+						sendAvailableMessage: true,
+						active: true
+					})
+					instance.publish('log', order, { sync: false }).promise.then(( artifacts ) => {
+						expect(artifacts).to.have.length(1)
+						artifacts[0].promise.then(( order ) => {
+							expect(order).to.eql([ 1, 2, 3, 4 ])
+							done()
+						}).catch(err => done(err))
+					}).catch(err => done(err))
+				}).catch(err => done(err))
+				expect(order.length).to.equal(0)
+			})
+		
+		})
+		
 	})
 
 })

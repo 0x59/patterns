@@ -95,7 +95,7 @@ const util = {
 	isArrayOf( arr, type, msg ) {
 		util.nArr(arr, INVALID_ARGUMENT)
 		util.nStr(type, INVALID_ARGUMENT)
-		
+
 		let t = true
 		for( const v of arr ) {
 			if( typeof v !== type ) {
@@ -120,7 +120,7 @@ const util = {
 		return t ? msg ? __throwIs(type, msg) : t : t
 	},
 
-	hasOwnBooleans( o, props ) {
+	hasOwnBooleans( o, ...props ) {
 		const result = {}
 
 		util.nObj(o, INVALID_ARGUMENT)

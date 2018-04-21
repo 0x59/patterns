@@ -42,7 +42,7 @@ const PubSubMixin = ( superclass ) => class PubSubMixin extends superclass {
 	}
 
 	static [$_validatePublishSettings]( o ) {
-		return _.hasOwnBooleans(o, [ 'usePromise', 'sync' ])
+		return _.hasOwnBooleans(o, 'usePromise', 'sync')
 	}
 
 	static [$_makeDefaultSubscribeSettings]() {
@@ -55,7 +55,7 @@ const PubSubMixin = ( superclass ) => class PubSubMixin extends superclass {
 	}
 
 	static [$_validateSubscribeSettings]( o ) {
-		return _.hasOwnBooleans(o, [ 'usePromise', 'sync', 'sendAvailableMessage', 'active' ])
+		return _.hasOwnBooleans(o, 'usePromise', 'sync', 'sendAvailableMessage', 'active')
 	}
 
 	constructor( ...args ) {
@@ -232,7 +232,7 @@ const PubSubMixin = ( superclass ) => class PubSubMixin extends superclass {
 	[$_makeSubscriber]( args ) {
 		const
 			{ fn: subFn, usePromise, sync, active, sendAvailableMessage } = args,
-			fn = sync ? subFn :	usePromise
+			fn = sync ? subFn : usePromise
 				? this[$_makePromiseSubscriber](subFn)
 				: this[$_makeAsyncSubscriber](subFn)
 
