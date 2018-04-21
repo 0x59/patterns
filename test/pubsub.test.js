@@ -100,44 +100,48 @@ describe('PubSub Mixin', function() {
 				expect(() => new Subclass().subscribe('a', fn)).to.not.throw()
 			})
 
-			it('should accept / async / skip available message / not active', function() {
+			it('should accept / async / no promise / skip available message / not active', function() {
 				expect(() => instance.subscribe('a', fn), {
 					sync: false,
+					usePromise: false,
 					sendAvailableMessage: false,
 					active: false
 				}).to.not.throw()
 			})
 
-			it('should accept / async / skip available message / active', function() {
+			it('should accept / async / no promise / skip available message / active', function() {
 				expect(() => instance.subscribe('a', fn), {
 					sync: false,
+					usePromise: false,
 					sendAvailableMessage: false,
 					active: true
 				}).to.not.throw()
 			})
 
-			it('should accept / async / send available message / not active', function() {
+			it('should accept / async / no promise / send available message / not active', function() {
 				expect(() => instance.subscribe('a', fn), {
 					sync: false,
+					usePromise: false,
 					sendAvailableMessage: true,
 					active: false
 				}).to.not.throw()
 			})
 
-			it('should accept / async / send available message / active', function() {
+			it('should accept / async / no promise / send available message / active', function() {
 				expect(() => instance.subscribe('a', fn), {
 					sync: false,
+					usePromise: false,
 					sendAvailableMessage: true,
 					active: true 
 				}).to.not.throw()
 			})
 
-			it('should accept / async / promise / send available message / active', function() {
+			it('should accept / async / promise / skip available message / not active', function() {
 				expect(() => instance.subscribe('a', fn), {
 					sync: false,
 					usePromise: true,
-					sendAvailableMessage: true,
-					active: true
+					sendAvailableMessage: false,
+					active: false
 				}).to.not.throw()
 			})
 
@@ -150,9 +154,28 @@ describe('PubSub Mixin', function() {
 				}).to.not.throw()
 			})
 
+			it('should accept / async / promise / send available message / not active', function() {
+				expect(() => instance.subscribe('a', fn), {
+					sync: false,
+					usePromise: true,
+					sendAvailableMessage: true,
+					active: false
+				}).to.not.throw()
+			})
+
+			it('should accept / async / promise / send available message / active', function() {
+				expect(() => instance.subscribe('a', fn), {
+					sync: false,
+					usePromise: true,
+					sendAvailableMessage: true,
+					active: true 
+				}).to.not.throw()
+			})
+
 			it('should accept / sync / skip available message / not active', function() {
 				expect(() => instance.subscribe('a', fn), {
 					sync: true,
+					usePromise: false,
 					sendAvailableMessage: false,
 					active: false
 				}).to.not.throw()
@@ -161,6 +184,7 @@ describe('PubSub Mixin', function() {
 			it('should accept / sync / skip available message / active', function() {
 				expect(() => instance.subscribe('a', fn), {
 					sync: true,
+					usePromise: false,
 					sendAvailableMessage: false,
 					active: true 
 				}).to.not.throw()
@@ -169,6 +193,7 @@ describe('PubSub Mixin', function() {
 			it('should accept / sync / send available message / not active', function() {
 				expect(() => instance.subscribe('a', fn), {
 					sync: true,
+					usePromise: false,
 					sendAvailableMessage: true,
 					active: false
 				}).to.not.throw()
@@ -177,12 +202,13 @@ describe('PubSub Mixin', function() {
 			it('should accept / sync / send available message / active', function() {
 				expect(() => instance.subscribe('a', fn), {
 					sync: true,
+					usePromise: false,
 					sendAvailableMessage: true,
 					active: true
 				}).to.not.throw()
 			})
 
-			it('should accept / sync / promise / send available message / active', function() {
+			it('should accept / sync / promise (ineffective) / send available message / active', function() {
 				expect(() => instance.subscribe('a', fn), {
 					sync: true,
 					usePromise: true,
@@ -197,23 +223,40 @@ describe('PubSub Mixin', function() {
 	
 	describe('Verification', function() {
 
+		let Subclass, instance, message, subFn, subPromiseFn, asyncExpectMessageCount
+
+		before(function() {
+			Subclass = class Subclass extends superclass(class {}).withMixins(PubSubMixin) {}
+			subFn = ( done, count, topicId, data ) => {
+				if( data ) data.count += 1
+				if( done ) done()
+				if( count !== null ) expect(message.count).to.equal(count)
+			}
+			subPromiseFn = ( done, count, topicId, data ) => {
+				data.promise.then(data => subFn(done, count, topicId, data)).catch(err => done(err))
+			}
+			asyncExpectMessageCount = ( count, done ) => {
+				expect(message.count).to.equal(count)
+				if( done ) done()
+			}
+		})
+
+		beforeEach(function() {
+			instance = new Subclass()
+			message = { count: 0 }
+		})
+
 		describe('Sync Publish, Sync Subscribe', function() {
 
-			let Subclass, instance, message, subFn
+			let boundSubFn
 
 			before(function() {
-				Subclass = class Subclass extends superclass(class {}).withMixins(PubSubMixin) {}
-				subFn = ( topicId, data ) => { if( data ) data.count += 1 }
-			})
-
-			beforeEach(function() {
-				instance = new Subclass()
-				message = { count: 0 }
+				boundSubFn = subFn.bind(null, null, null)
 			})
 
 			it('should receive the available message / send message / active', function() {
 				instance.publish('log', message, { sync: true })
-				instance.subscribe('log', subFn, {
+				instance.subscribe('log', boundSubFn, {
 					sync: true,
 					sendAvailableMessage: true,
 					active: true
@@ -223,7 +266,7 @@ describe('PubSub Mixin', function() {
 
 			it('should not receive the available message / send message / inactive', function() {
 				instance.publish('log', message, { sync: true })
-				instance.subscribe('log', subFn, {
+				instance.subscribe('log', boundSubFn, {
 					sync: true,
 					sendAvailableMessage: true,
 					active: false
@@ -233,7 +276,7 @@ describe('PubSub Mixin', function() {
 
 			it('should not receive the available message / skip message / active', function() {
 				instance.publish('log', message, { sync: true })
-				instance.subscribe('log', subFn, {
+				instance.subscribe('log', boundSubFn, {
 					sync: true,
 					sendAvailableMessage: false,
 					active: true
@@ -243,7 +286,7 @@ describe('PubSub Mixin', function() {
 
 			it('should not receive the available message / skip message / inactive', function() {
 				instance.publish('log', message, { sync: true })
-				instance.subscribe('log', subFn, {
+				instance.subscribe('log', boundSubFn, {
 					sync: true,
 					sendAvailableMessage: false,
 					active: false
@@ -253,7 +296,7 @@ describe('PubSub Mixin', function() {
 
 			it('should receive the available message and new messages / send message / active', function() {
 				instance.publish('log', message, { sync: true }) // 0
-				instance.subscribe('log', subFn, {
+				instance.subscribe('log', boundSubFn, {
 					sync: true,
 					sendAvailableMessage: true,
 					active: true
@@ -265,13 +308,13 @@ describe('PubSub Mixin', function() {
 
 			it('should support duplicate subscriptions', function() {
 				instance.publish('log', message, { sync: true }) // 0
-				instance.subscribe('log', subFn, {
+				instance.subscribe('log', boundSubFn, {
 					sync: true,
 					sendAvailableMessage: true,
 					active: true
 				}) // 1
 				instance.publish('log', message, { sync: true }) // 2
-				instance.subscribe('log', subFn, {
+				instance.subscribe('log', boundSubFn, {
 					sync: true,
 					sendAvailableMessage: true,
 					active: true
@@ -281,7 +324,7 @@ describe('PubSub Mixin', function() {
 			})
 
 			it('should support toggling subscriptions and receiving the available message', function() {
-				let ctrl = instance.subscribe('log', subFn, {
+				let ctrl = instance.subscribe('log', boundSubFn, {
 					sync: true,
 					sendAvailableMessage: true,
 					active: true
@@ -301,7 +344,7 @@ describe('PubSub Mixin', function() {
 			})
 			
 			it('should support turning subscriptions on/off', function() {
-				let ctrl = instance.subscribe('log', subFn, {
+				let ctrl = instance.subscribe('log', boundSubFn, {
 					sync: true,
 					sendAvailableMessage: false,
 					active: false
@@ -322,7 +365,7 @@ describe('PubSub Mixin', function() {
 			})
 
 			it('should support turning subscriptions on/off and receiving the available message', function() {
-				let ctrl = instance.subscribe('log', subFn, {
+				let ctrl = instance.subscribe('log', boundSubFn, {
 					sync: true,
 					sendAvailableMessage: true,
 					active: false
@@ -342,7 +385,7 @@ describe('PubSub Mixin', function() {
 			})
 
 			it('should support settings retention for publish', function() {
-				let ctrl = instance.subscribe('log', subFn, {
+				let ctrl = instance.subscribe('log', boundSubFn, {
 					sync: true,
 					sendAvailableMessage: false,
 					active: true
@@ -361,41 +404,6 @@ describe('PubSub Mixin', function() {
 		})
 
 		describe('Sync Publish, Async Subscribe', function() {
-
-			let Subclass, instance, message, subFn, subPromiseFn, asyncExpectMessageCount
-
-			before(function() {
-				Subclass = class Subclass extends superclass(class {}).withMixins(PubSubMixin) {}
-				subFn = ( done, count, topicId, data ) => {
-					if( data ) data.count += 1
-					if( done ) {
-						if( count !== null ) {
-							expect(message.count).to.equal(count)
-						}
-						done()
-					}
-				}
-				subPromiseFn = ( done, count, topicId, data ) => {
-					data.promise.then(( data ) => {
-						if( data ) data.count += 1
-						if( done ) {
-							if( count !== null ) {
-								expect(message.count).to.equal(count)
-							}
-							done()
-						}
-					}).catch(err => done(err))
-				}
-				asyncExpectMessageCount = ( count, done ) => {
-					expect(message.count).to.equal(count)
-					if( done ) done()
-				}
-			})
-
-			beforeEach(function() {
-				instance = new Subclass()
-				message = { count: 0 }
-			})
 
 			it('should receive available message / send message / no promise / active', function( done ) {
 				const pubArtifacts = instance.publish('log', message, { sync: true })
@@ -524,78 +532,62 @@ describe('PubSub Mixin', function() {
 				instance.publish('log', message, { sync: true })
 				setTimeout(asyncExpectMessageCount, 0, 3, done)
 			})
+
 		})
 
 		describe('Async Publish, Sync Subscribe', function() {
 
-			let Subclass, instance, message, subFn
-
-			before(function() {
-				Subclass = class Subclass extends superclass(class {}).withMixins(PubSubMixin) {}
-				subFn = ( count, topicId, data ) => {
-					data.count += 1
-					if( count !== null ) {
-						expect(data.count).to.equal(count)
-					}
-				}
-			})
-
-			beforeEach(function() {
-				instance = new Subclass()
-				message = { count: 0 }
-			})
-
 			it('should receive the available message when requested and active', function( done ) {
 				instance.publish('log', message, { sync: false }).promise.then(() => {
-					instance.subscribe('log', subFn.bind(null, 1), {
+					instance.subscribe('log', subFn.bind(null, null, 1), {
 						sync: true,
 						sendAvailableMessage: true,
 						active: true
 					})
 					done()
-				})
+				}).catch(err => done(err))
 				expect(message.count).to.equal(0)
 			})
 
 			it('should not receive the available message when requested and inactive', function( done ) {
 				instance.publish('log', message, { sync: false }).promise.then(() => {
-					instance.subscribe('log', subFn.bind(null, 1), {
+					instance.subscribe('log', subFn.bind(null, null, 1), {
 						sync: true,
 						sendAvailableMessage: true,
 						active: false
 					})
 					done()
-				})
+				}).catch(err => done(err))
 				expect(message.count).to.equal(0)
 			})
 
 			it('should not receive the available message when not requested and active', function( done ) {
 				instance.publish('log', message, { sync: false }).promise.then(() => {
-					instance.subscribe('log', subFn.bind(null, 1), {
+					instance.subscribe('log', subFn.bind(null, null, 1), {
 						sync: true,
 						sendAvailableMessage: false,
 						active: true
 					})
 					done()
-				})
+				}).catch(err => done(err))
 				expect(message.count).to.equal(0)
 			})
 
 			it('should not receive the available message when not requested and inactive', function( done ) {
 				instance.publish('log', message, { sync: false }).promise.then(() => {
-					instance.subscribe('log', subFn.bind(null, 1), {
+					instance.subscribe('log', subFn.bind(null, null, 1), {
 						sync: true,
 						sendAvailableMessage: false,
 						active: false
 					})
 					done()
-				})
+				}).catch(err => done(err))
 				expect(message.count).to.equal(0)
 			})
 
 			it('should receive the available message and new messages', function( done ) {
 				instance.publish('log', message, { sync: false }) // 1
-				instance.subscribe('log', subFn.bind(null, null), { 
+				instance.subscribe('log', subFn.bind(null, null, null), { 
 					sync: true,
 					sendAvailableMessage: true,
 					active: true
@@ -604,12 +596,12 @@ describe('PubSub Mixin', function() {
 				instance.publish('log', message, { sync: false }).promise.then(() => {
 					expect(message.count).to.equal(3)
 					done()
-				}) // 3 
+				}).catch(err => done(err)) // 3
 				expect(message.count).to.equal(0)
 			})
 
 			it('should support duplicate subscriptions', function( done ) {
-				const fn = subFn.bind(null, null)
+				const fn = subFn.bind(null, null, null)
 				instance.publish('log', message, { sync: false }) // 1 
 				instance.subscribe('log', fn, {
 					sync: true,
@@ -625,12 +617,12 @@ describe('PubSub Mixin', function() {
 				instance.publish('log', message, { sync: false }).promise.then(() => {
 					expect(message.count).to.equal(6)
 					done()
-				}) // 3 x 2 = 6
+				}).catch(err => done(err))  // 3 x 2 = 6
 				expect(message.count).to.equal(0)
 			})
 
 			it('should support toggling subscriptions and receiving the available message', function( done ) {
-				let ctrl = instance.subscribe('log', subFn.bind(null, null), { 
+				let ctrl = instance.subscribe('log', subFn.bind(null, null, null), { 
 					sync: true,
 					sendAvailableMessage: true,
 					active: true
@@ -638,18 +630,18 @@ describe('PubSub Mixin', function() {
 				instance.publish('log', message, { sync: false }).promise.then(() => {
 					expect(message.count).to.equal(1)
 					ctrl.toggle()
-				})
+				}).catch(err => done(err))
 
 				instance.publish('log', message, { sync: false }).promise.then(() => {
 					ctrl.toggle()
 					expect(message.count).to.equal(2)
 					done()
-				})
+				}).catch(err => done(err))
 				expect(message.count).to.equal(0)
 			})
 			
 			it('should support turning subscriptions on/off', function( done ) {
-				let ctrl = instance.subscribe('log', subFn.bind(null, null), { 
+				let ctrl = instance.subscribe('log', subFn.bind(null, null, null), { 
 					sync: true,
 					sendAvailableMessage: false,
 					active: false
@@ -670,7 +662,7 @@ describe('PubSub Mixin', function() {
 			})
 
 			it('should support turning subscriptions on/off and receiving the available message', function( done ) {
-				let ctrl = instance.subscribe('log', subFn.bind(null, null), { 
+				let ctrl = instance.subscribe('log', subFn.bind(null, null, null), { 
 					sync: true,
 					sendAvailableMessage: true,
 					active: false
@@ -694,39 +686,27 @@ describe('PubSub Mixin', function() {
 		
 		describe('Async Publish, (A)sync Subscribe', function() {
 
-			let	Subclass, instance, message, subFn, subPromiseFn, asyncExpectMessageCount,
-				subOrderFn, subPromiseOrderFn, order
+			let subOrderFn, subPromiseOrderFn, order
 
 			before(function() {
-				Subclass = class Subclass extends superclass(class {}).withMixins(PubSubMixin) {}
-				subFn = ( topicId, data ) => {
-					if( data ) data.count += 1
-				}
-				subPromiseFn = ( topicId, data ) => {
-					data.promise.then(data => subFn(topicId, data))
-				}
-				asyncExpectMessageCount = ( count, done ) => {
-					expect(message.count).to.equal(count)
-					if( done ) done()
-				}
 				subOrderFn = ( num, topicId, order ) => {
 					order.push(num)
 				}
 				subPromiseOrderFn = ( num, topicId, artifacts ) => {
-					artifacts.promise.then(order => subOrderFn(num, topicId, order))
+					artifacts.promise
+						.then(order => subOrderFn(num, topicId, order))
+						.catch(err => done(err))
 				}
 			})
 
 			beforeEach(function() {
-				instance = new Subclass()
-				message = { count: 0 }
 				order = []
 			})
 
 			it('should: 1) receive available message 2) provide publish promise 3) provide subscribe promise to subscriber 4) provide subscribe promise to publisher', function( done ) {
 				instance.publish('log', message, { sync: false }).promise.then(( artifacts ) => {
 					expect(artifacts).to.be.an('array').that.is.empty
-					instance.subscribe('log', subPromiseFn.bind(null), {
+					instance.subscribe('log', subPromiseFn.bind(null, null, null), {
 						sync: false,
 						usePromise: true,
 						sendAvailableMessage: true,
@@ -744,7 +724,7 @@ describe('PubSub Mixin', function() {
 			})
 			
 			it('should provide promises to publisher for all promise-based subscribers', function( done ) {
-				const fn = subPromiseFn.bind(null)
+				const fn = subPromiseFn.bind(null, null, null)
 				instance.publish('log', message, { sync: false }).promise.then(( artifacts ) => {
 					expect(artifacts).to.be.an('array').that.is.empty
 					instance.subscribe('log', fn, {
