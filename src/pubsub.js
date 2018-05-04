@@ -161,18 +161,10 @@ const PubSubMixin = ( superclass ) => class PubSubMixin extends superclass {
 			&& tLen > idIndex ) {
 		
 			const topicId = topicIds[idIndex]
-			let nextTopic
-
-			if( !topic.has(topicId) ) {
-				nextTopic = this[$_addTopic](topic, topicId)
-			
-			} else {
-				nextTopic = topic.get(topicId)
-			}
 
 			artifacts.push(...this[$_publish]({ ...args, 
 				idIndex: idIndex + 1,
-				topic: nextTopic
+				topic: topic.has(topicId) ? topic.get(topicId) : this[$_addTopic](topic, topicId)
 			}))
 		}
 
@@ -197,8 +189,8 @@ const PubSubMixin = ( superclass ) => class PubSubMixin extends superclass {
 	}
 
 	[$_makeControl]( args ) {
+		const { subscriber, topicIds, idIndex, topic, active } = args
 		return () => {
-			const { subscriber, topicIds, idIndex, topic, active } = args
 			subscriber.active = active === null ? !subscriber.active : !!active
 			this[$_checkAndExecuteSubscriber](subscriber, topicIds, idIndex, topic)
 		}
@@ -265,10 +257,10 @@ const PubSubMixin = ( superclass ) => class PubSubMixin extends superclass {
 
 		this[$_checkAndExecuteSubscriber](subscriber, topicIds, idIndex, topic)
 		
-		const ctrlArgs = { subscriber, topicIds, idIndex, topic, active: true }
+		const ctrlArgs = { subscriber, topicIds, idIndex, topic }
 
 		return {
-			on: this[$_makeControl](ctrlArgs),
+			on: this[$_makeControl](( ctrlArgs.active = true, ctrlArgs )),
 			off: this[$_makeControl](( ctrlArgs.active = false, ctrlArgs )),
 			toggle: this[$_makeControl](( ctrlArgs.active = null, ctrlArgs )),
 			unsubscribe: this[$_makeUnsubscribe](subscriber, token)
@@ -286,21 +278,13 @@ const PubSubMixin = ( superclass ) => class PubSubMixin extends superclass {
 			return this[$_makeSubscription](args)
 
 		} else {
-			let nextTopic
 			const
 				{ topic } = args,
 				topicId = topicIds[idIndex]
 
-			if( !topic.has(topicId) ) {
-				nextTopic = this[$_addTopic](topic, topicId)
-
-			} else {
-				nextTopic = topic.get(topicId)
-			}
-
 			return this[$_subscribe]({ ...args,
 				idIndex: idIndex + 1,
-				topic: nextTopic
+				topic: topic.has(topicId) ? topic.get(topicId) : this[$_addTopic](topic, topicId)
 			})
 		}
 	}
