@@ -1,0 +1,29 @@
+{
+  "name": "patterns",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "javascript patterns",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest",
+    "watch-test": "jest --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0x59/patterns.git"
+  },
+  "keywords": [],
+  "author": "0x59 <0x59.sw@gmail.com> (https://github.com/0x59)",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/0x59/patterns/issues"
+  },
+  "homepage": "https://github.com/0x59/patterns#readme",
+  "devDependencies": {
+    "@babel/core": "^7.15.0",
+    "babel-jest": "^27.0.6",
+    "babel-plugin-transform-object-hasown": "^1.1.0",
+    "jest": "^27.0.6",
+    "jest-cli": "^27.0.6"
+  }
+}
