@@ -1,7 +1,16 @@
+/** @module Mixins */
+import { prototypeChainHasOwn } from './util'
 
 const	mixinSymbols = new Map()
 
-function superclassWithMixins(superclass, ...mixins) {
+/**
+ * Provides mixin application using ES6 class expressions
+ * @func superclassWithMixins
+ * @param superclass {class} The class to be extended
+ * @param mixins {array} Functions that return a class expression extending the parameter
+ * @return {class} The superclass extended by the mixin applications
+ */
+export function superclassWithMixins(superclass, ...mixins) {
   return mixins.reduce((classHierarchy, mixin) => {
     if( !mixinSymbols.has(mixin) ) {
       mixinSymbols.set(mixin, Symbol())
@@ -9,7 +18,6 @@ function superclassWithMixins(superclass, ...mixins) {
 
     const mixinSymbol = mixinSymbols.get(mixin)
     const application = mixin(classHierarchy)
-    let prototype = application.prototype
 
     // Define hasInstance one time per mixin
     if( !Object.hasOwn(mixin, Symbol.hasInstance) ) {
@@ -20,18 +28,10 @@ function superclassWithMixins(superclass, ...mixins) {
     }
 
     // Allow only one application of the mixin per hierarchy
-    while( prototype !== null ) {
-      if( Object.hasOwn(prototype, mixinSymbol) ) {
-        break;
-      }
-      prototype = Object.getPrototypeOf(prototype)
-    }
-
-    if( prototype === null ) {
+    if( prototypeChainHasOwn(application, mixinSymbol) === null ) {
       // Set mixin reference for hasInstance test
-      Object.defineProperty(application.prototype, mixinSymbol, {
-        value: mixin
-      })
+      application.prototype[mixinSymbol] = mixin;
+
       return application
     } else {
       return classHierarchy
@@ -39,6 +39,3 @@ function superclassWithMixins(superclass, ...mixins) {
 
   }, superclass)
 }
-
-export { superclassWithMixins }
-

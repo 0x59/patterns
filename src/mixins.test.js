@@ -15,7 +15,7 @@ describe('Mixins', () => {
       expect(superclassWithMixins(TestClass)).toBe(TestClass)
     })
 
-    it('should extend the provided superclass given a proper mixin definition', () => {
+    it('should extend the provided superclass given a proper mixin factory', () => {
       const TestClass = class {}
       const Mixin = superclass => class extends superclass {}
       const MixinExtendingSuperclass = superclassWithMixins(TestClass, Mixin)
@@ -40,7 +40,7 @@ describe('Mixins', () => {
 
     describe('instances', () => {
 
-      it('should support `instanceof` operator for mixins', () => {
+      it('should support `instanceof` operator for applied mixins', () => {
         const TestClass = class {}
         const Mixin1 = superclass => class extends superclass {}
         const Mixin2 = superclass => class extends superclass {}
@@ -56,7 +56,7 @@ describe('Mixins', () => {
         expect(new Subclass2 instanceof Mixin3).toBe(true)
       })
 
-      it('should not duplicate mixins in hierarchies', () => {
+      it('should not duplicate applied mixins in hierarchies', () => {
         const TestClass = class {}
         const Mixin1 = superclass => class extends superclass {}
         const Mixin2 = superclass => class extends superclass {}

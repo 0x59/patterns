@@ -3,10 +3,16 @@
   "version": "0.1.0",
   "type": "module",
   "description": "javascript patterns",
-  "main": "src/index.js",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./mixins": "./src/mixins.js",
+    "./util": "./src/util.js"
+  },
   "scripts": {
     "test": "jest",
-    "watch-test": "jest --watch"
+    "watch-test": "jest --watch",
+    "doc": "jsdoc src"
   },
   "repository": {
     "type": "git",
@@ -24,6 +30,7 @@
     "babel-jest": "^27.0.6",
     "babel-plugin-transform-object-hasown": "^1.1.0",
     "jest": "^27.0.6",
-    "jest-cli": "^27.0.6"
+    "jest-cli": "^27.0.6",
+    "jsdoc": "^3.6.7"
   }
 }

@@ -4,6 +4,7 @@
 - A function that provides basic mixin application for the provided superclass using ES6 class expressions
 - Mixin applications form a mixin class hierarchy through the reduction of a series of factories that return named and parameterized class expressions extending a superclass
 ```JavaScript
+    class Superclass {...}
     const Mixin1 = superclass => class Mixin1 extends superclass {...}
     const Mixin2 = superclass => class Mixin2 extends superclass {...}
     class Subclass extends superclassWithMixins(Superclass, Mixin1, Mixin2) {...}
