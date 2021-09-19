@@ -2,9 +2,9 @@ import { prototypeChainHasOwn } from './index'
 
 describe('Util', () => {
 
-	it('should export function `prototypeChainHasOwn`', () => {
-		expect(prototypeChainHasOwn).toEqual(expect.any(Function))
-	})
+  it('should export function `prototypeChainHasOwn`', () => {
+    expect(prototypeChainHasOwn).toEqual(expect.any(Function))
+  })
 
   describe('prototypeChainHasOwn()', () => {
 

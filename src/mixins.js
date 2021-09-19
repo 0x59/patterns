@@ -4,7 +4,7 @@ import { prototypeChainHasOwn } from './util'
 const	mixinSymbols = new Map()
 
 /**
- * Provides mixin application using ES6 class expressions
+ * Provides mixin application using ES 2015 class expressions
  * @func superclassWithMixins
  * @param superclass {class} The class to be extended
  * @param mixins {array} Functions that return a class expression extending the parameter

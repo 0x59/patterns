@@ -3,9 +3,9 @@ import { inspect } from 'util'
 
 describe('Mixins', () => {
 
-	it('should export the function `superclassWithMixins`', function() {
-		expect(superclassWithMixins).toEqual(expect.any(Function))
-	})
+  it('should export the function `superclassWithMixins`', function() {
+    expect(superclassWithMixins).toEqual(expect.any(Function))
+  })
 
   describe('superclassWithMixins()', () => {
 
