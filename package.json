@@ -12,7 +12,8 @@
   "scripts": {
     "test": "jest",
     "watch-test": "jest --watch",
-    "doc": "jsdoc src"
+    "doc": "jsdoc -c jsdoc.config.cjs",
+    "lint": "eslint src"
   },
   "repository": {
     "type": "git",
@@ -29,6 +30,10 @@
     "@babel/core": "^7.15.0",
     "babel-jest": "^27.0.6",
     "babel-plugin-transform-object-hasown": "^1.1.0",
+    "eslint": "^7.32.0",
+    "eslint-plugin-jest": "^24.4.2",
+    "eslint-plugin-jsdoc": "^36.1.0",
+    "eslint-plugin-react": "^7.25.2",
     "jest": "^27.0.6",
     "jest-cli": "^27.0.6",
     "jsdoc": "^3.6.7"
