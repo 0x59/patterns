@@ -12,7 +12,7 @@
   "scripts": {
     "test": "jest",
     "watch-test": "jest --watch",
-    "doc": "jsdoc -c jsdoc.config.cjs",
+    "docs": "jsdoc -c jsdoc.config.cjs",
     "lint": "eslint src"
   },
   "repository": {
