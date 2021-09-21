@@ -1,4 +1,4 @@
-/** module Symbol Registry */
+/** @module Symbol Registry */
 
 /**
  * Uses a proxy to create a symbol registry that uniquely and persistently maps keys (object properties) to symbols
