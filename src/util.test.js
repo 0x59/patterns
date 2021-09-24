@@ -1,9 +1,200 @@
-import { prototypeChainHasOwn } from './index'
+import {
+  isUnd,
+  isBool,
+  isNum,
+  isBigInt,
+  isSym,
+  isStr,
+  isFn,
+  isObj,
+  prototypeChainHasOwn
+} from './util'
 
 describe('Util', () => {
 
-  it('should export function `prototypeChainHasOwn`', () => {
-    expect(prototypeChainHasOwn).toEqual(expect.any(Function))
+  it('should export function `isUnd`', () => {
+    expect(isUnd).toEqual(expect.any(Function))
+  })
+
+  it('should export function `isBool`', () => {
+    expect(isBool).toEqual(expect.any(Function))
+  })
+
+  it('should export function `isNum`', () => {
+    expect(isNum).toEqual(expect.any(Function))
+  })
+
+  it('should export function `isBigInt`', () => {
+    expect(isBigInt).toEqual(expect.any(Function))
+  })
+
+  it('should export function `isStr`', () => {
+    expect(isStr).toEqual(expect.any(Function))
+  })
+
+  it('should export function `isSym`', () => {
+    expect(isSym).toEqual(expect.any(Function))
+  })
+
+  it('should export function `isFn`', () => {
+    expect(isFn).toEqual(expect.any(Function))
+  })
+
+  it('should export function `isObj`', () => {
+    expect(isObj).toEqual(expect.any(Function))
+  })
+
+  describe('isUnd()', () => {
+
+    it('should return `true` when value is `undefined`', () => {
+      expect(isUnd(void 0)).toBe(true)
+    })
+
+    it('should return `false` when value is not `undefined`', () => {
+      expect(isUnd(() => {})).toBe(false)
+      expect(isUnd({})).toBe(false)
+      expect(isUnd('test')).toBe(false)
+      expect(isUnd(0)).toBe(false)
+      expect(isUnd(1n)).toBe(false)
+      expect(isUnd(true)).toBe(false)
+      expect(isUnd(Symbol())).toBe(false)
+      expect(isUnd(null)).toBe(false)
+    })
+
+  })
+
+  describe('isBool()', () => {
+
+    it('should return `true` when value is boolean', () => {
+      expect(isBool(true)).toBe(true)
+      expect(isBool(false)).toBe(true)
+    })
+
+    it('should return `false` when value is not boolean', () => {
+      expect(isBool(() => {})).toBe(false)
+      expect(isBool({})).toBe(false)
+      expect(isBool('test')).toBe(false)
+      expect(isBool(0)).toBe(false)
+      expect(isBool(1n)).toBe(false)
+      expect(isBool(void 0)).toBe(false)
+      expect(isBool(Symbol())).toBe(false)
+      expect(isBool(null)).toBe(false)
+    })
+
+  })
+
+  describe('isNum()', () => {
+
+    it('should return `true` when value is a number', () => {
+      expect(isNum(0)).toBe(true)
+    })
+
+    it('should return `false` when value is not a number', () => {
+      expect(isNum(() => {})).toBe(false)
+      expect(isNum({})).toBe(false)
+      expect(isNum('test')).toBe(false)
+      expect(isNum(true)).toBe(false)
+      expect(isNum(1n)).toBe(false)
+      expect(isNum(void 0)).toBe(false)
+      expect(isNum(Symbol())).toBe(false)
+      expect(isNum(null)).toBe(false)
+    })
+
+  })
+
+  describe('isBigInt()', () => {
+
+    it('should return `true` when value is a bigint', () => {
+      expect(isBigInt(0n)).toBe(true)
+    })
+
+    it('should return `false` when value is not a bigint', () => {
+      expect(isBigInt(() => {})).toBe(false)
+      expect(isBigInt({})).toBe(false)
+      expect(isBigInt('test')).toBe(false)
+      expect(isBigInt(true)).toBe(false)
+      expect(isBigInt(1)).toBe(false)
+      expect(isBigInt(void 0)).toBe(false)
+      expect(isBigInt(Symbol())).toBe(false)
+      expect(isBigInt(null)).toBe(false)
+    })
+
+  })
+
+  describe('isStr()', () => {
+
+    it('should return `true` when value is a string', () => {
+      expect(isStr('')).toBe(true)
+    })
+
+    it('should return `false` when value is not a string', () => {
+      expect(isStr(() => {})).toBe(false)
+      expect(isStr({})).toBe(false)
+      expect(isStr(1n)).toBe(false)
+      expect(isStr(true)).toBe(false)
+      expect(isStr(1)).toBe(false)
+      expect(isStr(void 0)).toBe(false)
+      expect(isStr(Symbol())).toBe(false)
+      expect(isStr(null)).toBe(false)
+    })
+
+  })
+
+  describe('isSym()', () => {
+
+    it('should return `true` when value is a symbol', () => {
+      expect(isSym(Symbol())).toBe(true)
+    })
+
+    it('should return `false` when value is not a symbol', () => {
+      expect(isSym(() => {})).toBe(false)
+      expect(isSym({})).toBe(false)
+      expect(isSym(1n)).toBe(false)
+      expect(isSym(true)).toBe(false)
+      expect(isSym(1)).toBe(false)
+      expect(isSym(void 0)).toBe(false)
+      expect(isSym('test')).toBe(false)
+      expect(isSym(null)).toBe(false)
+    })
+
+  })
+
+  describe('isFn()', () => {
+
+    it('should return `true` when value is a function', () => {
+      expect(isFn(() => {})).toBe(true)
+    })
+
+    it('should return `false` when value is not a function', () => {
+      expect(isFn({})).toBe(false)
+      expect(isFn(1n)).toBe(false)
+      expect(isFn(true)).toBe(false)
+      expect(isFn(1)).toBe(false)
+      expect(isFn(void 0)).toBe(false)
+      expect(isFn('test')).toBe(false)
+      expect(isFn(Symbol())).toBe(false)
+      expect(isFn(null)).toBe(false)
+    })
+
+  })
+
+  describe('isObj()', () => {
+
+    it('should return `true` when value is a object', () => {
+      expect(isObj({})).toBe(true)
+      expect(isObj(null)).toBe(true)
+    })
+
+    it('should return `false` when value is not a object', () => {
+      expect(isObj(() => {})).toBe(false)
+      expect(isObj(1n)).toBe(false)
+      expect(isObj(true)).toBe(false)
+      expect(isObj(1)).toBe(false)
+      expect(isObj(void 0)).toBe(false)
+      expect(isObj('test')).toBe(false)
+      expect(isObj(Symbol())).toBe(false)
+    })
+
   })
 
   describe('prototypeChainHasOwn()', () => {
