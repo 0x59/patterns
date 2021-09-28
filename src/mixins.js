@@ -45,7 +45,7 @@ export const withMixins = (superclass, ...mixins) => {
  * @func withMixinsA
  * @param superclass {class} The class to be extended
  * @param mixins {array} Functions that return a class expression extending the parameter
- * @param apply {function} A function to run per application with the signature:
+ * @param apply {array} Functions to run per application with the signature:
  *   `application = ({ application, classHierarchy, mixinSymbol, superclass })`
  * @return {class} The superclass extended by the mixin applications
  */
