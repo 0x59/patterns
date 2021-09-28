@@ -1,4 +1,4 @@
-export { superclassWithMixins } from './mixins'
+export { withMixins, withMixinsA } from './mixins'
 export {
   isUnd,
   isBool,
