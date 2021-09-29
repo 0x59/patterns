@@ -23,19 +23,10 @@ https://0x59.github.io/patterns/
 ```JavaScript
     const cacheMixinApps = ({ application, classHierarchy, mixinSymbol }) => {
       if( !classHierarchy[mixinSymbol] ) {
-        classHierarchy[mixinSymbol] = new Map()
+        classHierarchy[mixinSymbol] = application
       }
 
-      const cache = classHierarchy[mixinSymbol]
-
-      if( cache.has(classHierarchy) ) {
-        return cache.get(classHierarchy)
-
-      } else {
-        cache.set(classHierarchy, application)
-      }
-
-      return application
+      return classHierarchy[mixinSymbol]
     }
     const myMixins = (superclass, ...mixins) => withMixinsA(superclass, mixins, [cacheMixinApps])
 
