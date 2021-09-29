@@ -7,7 +7,7 @@ const	mixinSymbols = new Map()
  * Provides mixin application using ES2015 class expressions
  * @func withMixins
  * @param superclass {class} The class to be extended
- * @param mixins {array} Functions that return a class expression extending the parameter
+ * @param mixins {...function} Functions that return a class expression extending the parameter
  * @return {class} The superclass extended by the mixin applications
  */
 export const withMixins = (superclass, ...mixins) => {
