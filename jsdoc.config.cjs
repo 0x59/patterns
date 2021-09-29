@@ -4,6 +4,6 @@
     "recurse": true
   },
   "source": {
-    "include": [ "src" ]
+    "include": [ "src", "README.md" ]
   }
 }

@@ -4,7 +4,7 @@ import { prototypeChainHasOwn } from './util'
 const	mixinSymbols = new Map()
 
 /**
- * Provides mixin application using ES 2015 class expressions
+ * Provides mixin application using ES2015 class expressions
  * @func withMixins
  * @param superclass {class} The class to be extended
  * @param mixins {array} Functions that return a class expression extending the parameter
@@ -46,7 +46,7 @@ export const withMixins = (superclass, ...mixins) => {
  * @param superclass {class} The class to be extended
  * @param mixins {array} Functions that return a class expression extending the parameter
  * @param apply {array} Functions to run per application with the signature:
- *   `application = ({ application, classHierarchy, mixinSymbol, superclass })`
+ *   `application = ({ application, classHierarchy, mixin, mixins, mixinSymbol, mixinSymbols, superclass })`
  * @return {class} The superclass extended by the mixin applications
  */
 export const withMixinsA = (superclass, mixins = [], apply = []) => {
@@ -73,10 +73,17 @@ export const withMixinsA = (superclass, mixins = [], apply = []) => {
 
       return apply.length
         ? apply.reduce((application, featureFn) => {
-            return featureFn({ application, classHierarchy, mixinSymbol, superclass })
+            return featureFn({
+              application,
+              classHierarchy,
+              mixin,
+              mixins,
+              mixinSymbol,
+              mixinSymbols,
+              superclass
+            })
           }, application)
         : application
-
     } else {
       return classHierarchy
     }
