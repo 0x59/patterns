@@ -2,8 +2,8 @@
 https://0x59.github.io/patterns/
 ## Mixins
 ### withMixins()
-- A function that provides basic mixin application for the provided superclass using ES2015 class expressions
-- Mixin applications form a mixin class hierarchy through the reduction of a series of factories that return parameterized (and optionally named) class expressions extending a superclass
+- A function that provides basic mixin application for the provided superclass
+- Mixin applications form a class hierarchy extending the superclass
 #### Example
 ```JavaScript
     class Superclass {}
@@ -12,13 +12,14 @@ https://0x59.github.io/patterns/
     const Mixin2 = superclass => class extends superclass {}
 
     class Subclass extends withMixins(Superclass, Mixin1, Mixin2) {}
-    // class hierarchy: superclass <= Mixin1 <= Mixin2 <= Subclass
+    // superclass <= Mixin1 <= Mixin2 <= Subclass // class hierarchy
 ```
 - Mixin applications that already exist in the class hierarchy are not duplicated
-- Support for the `instanceof` operator is provided by testing against the mixin factory
+- Support for the `instanceof` operator is provided by testing against the mixin
   - `new Subclass instanceof Mixin1 // true`
 - No mixin application caching is performed
 ### withMixinsA()
+- An experimental function to offer feature extension during the application process
 #### Examples
 ```JavaScript
     const cacheMixinApps = ({ application, classHierarchy, mixinSymbol }) => {

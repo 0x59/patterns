@@ -72,7 +72,7 @@
 
 
 <div class="description">
-    Provides mixin application using ES2015 class expressions
+    Provides mixin application to a superclass using parameterized ES2015 class expressions
 </div>
 
 
@@ -134,7 +134,7 @@
 
             
 
-            <td class="description last">The class to be extended</td>
+            <td class="description last">Class to extend</td>
         </tr>
 
     
@@ -147,7 +147,7 @@
             <td class="type">
             
                 
-<span class="param-type">function</span>
+<span class="param-type">Mixin</span>
 
 
             
@@ -167,7 +167,7 @@
 
             
 
-            <td class="description last">Functions that return a class expression extending the parameter</td>
+            <td class="description last">Mixins to apply as ordered</td>
         </tr>
 
     
@@ -208,7 +208,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="mixins.js.html">mixins.js</a>, <a href="mixins.js.html#line6">line 6</a>
+        <a href="mixins.js.html">mixins.js</a>, <a href="mixins.js.html#line27">line 27</a>
     </li></ul></dd>
     
 
@@ -237,7 +237,7 @@
 
         
 <div class="param-desc">
-    The superclass extended by the mixin applications
+    Superclass extended by the mixin applications
 </div>
 
 
@@ -326,7 +326,7 @@
 
             
 
-            <td class="description last">The class to be extended</td>
+            <td class="description last">Class to extend</td>
         </tr>
 
     
@@ -339,7 +339,7 @@
             <td class="type">
             
                 
-<span class="param-type">array</span>
+<span class="param-type">Array.&lt;Mixin></span>
 
 
             
@@ -349,7 +349,7 @@
 
             
 
-            <td class="description last">Functions that return a class expression extending the parameter</td>
+            <td class="description last">Mixins to apply as ordered</td>
         </tr>
 
     
@@ -362,7 +362,7 @@
             <td class="type">
             
                 
-<span class="param-type">array</span>
+<span class="param-type">Array.&lt;MixinFeature></span>
 
 
             
@@ -372,8 +372,7 @@
 
             
 
-            <td class="description last">Functions to run per application with the signature:
-  `application = ({ application, classHierarchy, mixin, mixins, mixinSymbol, mixinSymbols, superclass })`</td>
+            <td class="description last">Feature functions to apply per application</td>
         </tr>
 
     
@@ -414,7 +413,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="mixins.js.html">mixins.js</a>, <a href="mixins.js.html#line43">line 43</a>
+        <a href="mixins.js.html">mixins.js</a>, <a href="mixins.js.html#line65">line 65</a>
     </li></ul></dd>
     
 
@@ -443,7 +442,7 @@
 
         
 <div class="param-desc">
-    The superclass extended by the mixin applications
+    Superclass extended by the mixin applications
 </div>
 
 
@@ -470,6 +469,515 @@
     
 
     
+        <h3 class="subsection-title">Type Definitions</h3>
+
+        
+                
+
+    
+
+    
+    <h4 class="name" id="~Mixin"><span class="type-signature"></span>Mixin<span class="signature">(superclass)</span><span class="type-signature"> &rarr; {class}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Function with a body that defines and returns a class expression extending the parameter
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>superclass</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">class</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Class to extend</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="mixins.js.html">mixins.js</a>, <a href="mixins.js.html#line6">line 6</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Mixin application binding the class expression (definition) to the superclass
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">class</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+            
+                
+
+    
+
+    
+    <h4 class="name" id="~MixinFeature"><span class="type-signature"></span>MixinFeature<span class="signature">(internals)</span><span class="type-signature"> &rarr; {class}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Function executed per application to provide additional functionality
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>internals</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Private variables of the mixin application process to aid feature building
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>application</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">class</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Mixin application (the effective class hierarchy after applying the current mixin)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>classHierarchy</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">class</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Class hierarchy prior to the current mixin application</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>mixin</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Mixin</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Current mixin applied</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>mixins</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Mixin></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">All mixins being applied</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>mixinSymbol</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">symbol</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Symbol for uniquely mapping to the mixin reference on the application prototype to support `instanceof`.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>mixinSymbols</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;symbol></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Symbols for all mixins being applied</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>superclass</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">class</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Class being extended</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="mixins.js.html">mixins.js</a>, <a href="mixins.js.html#line13">line 13</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Mixin application
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">class</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+            
+    
 
     
 </article>
@@ -488,7 +996,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Wed Sep 29 2021 18:50:42 GMT-0500 (Central Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Thu Sep 30 2021 18:03:35 GMT-0500 (Central Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
