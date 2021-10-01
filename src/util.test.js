@@ -12,45 +12,45 @@ import {
 
 describe('Util', () => {
 
-  it('should export function `isUnd`', () => {
+  it('exports function `isUnd`', () => {
     expect(isUnd).toEqual(expect.any(Function))
   })
 
-  it('should export function `isBool`', () => {
+  it('exports function `isBool`', () => {
     expect(isBool).toEqual(expect.any(Function))
   })
 
-  it('should export function `isNum`', () => {
+  it('exports function `isNum`', () => {
     expect(isNum).toEqual(expect.any(Function))
   })
 
-  it('should export function `isBigInt`', () => {
+  it('exports function `isBigInt`', () => {
     expect(isBigInt).toEqual(expect.any(Function))
   })
 
-  it('should export function `isStr`', () => {
+  it('exports function `isStr`', () => {
     expect(isStr).toEqual(expect.any(Function))
   })
 
-  it('should export function `isSym`', () => {
+  it('exports function `isSym`', () => {
     expect(isSym).toEqual(expect.any(Function))
   })
 
-  it('should export function `isFn`', () => {
+  it('exports function `isFn`', () => {
     expect(isFn).toEqual(expect.any(Function))
   })
 
-  it('should export function `isObj`', () => {
+  it('exports function `isObj`', () => {
     expect(isObj).toEqual(expect.any(Function))
   })
 
   describe('isUnd()', () => {
 
-    it('should return `true` when value is `undefined`', () => {
+    it('returns `true` when value is `undefined`', () => {
       expect(isUnd(void 0)).toBe(true)
     })
 
-    it('should return `false` when value is not `undefined`', () => {
+    it('returns `false` when value is not `undefined`', () => {
       expect(isUnd(() => {})).toBe(false)
       expect(isUnd({})).toBe(false)
       expect(isUnd('test')).toBe(false)
@@ -65,12 +65,12 @@ describe('Util', () => {
 
   describe('isBool()', () => {
 
-    it('should return `true` when value is boolean', () => {
+    it('returns `true` when value is boolean', () => {
       expect(isBool(true)).toBe(true)
       expect(isBool(false)).toBe(true)
     })
 
-    it('should return `false` when value is not boolean', () => {
+    it('returns `false` when value is not boolean', () => {
       expect(isBool(() => {})).toBe(false)
       expect(isBool({})).toBe(false)
       expect(isBool('test')).toBe(false)
@@ -85,11 +85,11 @@ describe('Util', () => {
 
   describe('isNum()', () => {
 
-    it('should return `true` when value is a number', () => {
+    it('returns `true` when value is a number', () => {
       expect(isNum(0)).toBe(true)
     })
 
-    it('should return `false` when value is not a number', () => {
+    it('returns `false` when value is not a number', () => {
       expect(isNum(() => {})).toBe(false)
       expect(isNum({})).toBe(false)
       expect(isNum('test')).toBe(false)
@@ -104,11 +104,11 @@ describe('Util', () => {
 
   describe('isBigInt()', () => {
 
-    it('should return `true` when value is a bigint', () => {
+    it('returns `true` when value is a bigint', () => {
       expect(isBigInt(0n)).toBe(true)
     })
 
-    it('should return `false` when value is not a bigint', () => {
+    it('returns `false` when value is not a bigint', () => {
       expect(isBigInt(() => {})).toBe(false)
       expect(isBigInt({})).toBe(false)
       expect(isBigInt('test')).toBe(false)
@@ -123,11 +123,11 @@ describe('Util', () => {
 
   describe('isStr()', () => {
 
-    it('should return `true` when value is a string', () => {
+    it('returns `true` when value is a string', () => {
       expect(isStr('')).toBe(true)
     })
 
-    it('should return `false` when value is not a string', () => {
+    it('returns `false` when value is not a string', () => {
       expect(isStr(() => {})).toBe(false)
       expect(isStr({})).toBe(false)
       expect(isStr(1n)).toBe(false)
@@ -142,11 +142,11 @@ describe('Util', () => {
 
   describe('isSym()', () => {
 
-    it('should return `true` when value is a symbol', () => {
+    it('returns `true` when value is a symbol', () => {
       expect(isSym(Symbol())).toBe(true)
     })
 
-    it('should return `false` when value is not a symbol', () => {
+    it('returns `false` when value is not a symbol', () => {
       expect(isSym(() => {})).toBe(false)
       expect(isSym({})).toBe(false)
       expect(isSym(1n)).toBe(false)
@@ -161,11 +161,11 @@ describe('Util', () => {
 
   describe('isFn()', () => {
 
-    it('should return `true` when value is a function', () => {
+    it('returns `true` when value is a function', () => {
       expect(isFn(() => {})).toBe(true)
     })
 
-    it('should return `false` when value is not a function', () => {
+    it('returns `false` when value is not a function', () => {
       expect(isFn({})).toBe(false)
       expect(isFn(1n)).toBe(false)
       expect(isFn(true)).toBe(false)
@@ -180,12 +180,12 @@ describe('Util', () => {
 
   describe('isObj()', () => {
 
-    it('should return `true` when value is a object', () => {
+    it('returns `true` when value is a object', () => {
       expect(isObj({})).toBe(true)
       expect(isObj(null)).toBe(true)
     })
 
-    it('should return `false` when value is not a object', () => {
+    it('returns `false` when value is not a object', () => {
       expect(isObj(() => {})).toBe(false)
       expect(isObj(1n)).toBe(false)
       expect(isObj(true)).toBe(false)
@@ -199,7 +199,7 @@ describe('Util', () => {
 
   describe('prototypeChainHasOwn()', () => {
 
-    it('should return `null` for non-objects', () => {
+    it('returns `null` for non-objects', () => {
       expect(prototypeChainHasOwn('test')).toBe(null)
       expect(prototypeChainHasOwn(0)).toBe(null)
       expect(prototypeChainHasOwn(1n)).toBe(null)
@@ -209,7 +209,7 @@ describe('Util', () => {
       expect(prototypeChainHasOwn(Symbol())).toBe(null)
     })
 
-    it('should return `null` for props other than strings and symbols', () => {
+    it('returns `null` for props other than strings and symbols', () => {
       expect(prototypeChainHasOwn({}, 0)).toBe(null)
       expect(prototypeChainHasOwn({}, 1n)).toBe(null)
       expect(prototypeChainHasOwn({}, true)).toBe(null)
@@ -217,12 +217,12 @@ describe('Util', () => {
       expect(prototypeChainHasOwn({}, null)).toBe(null)
     })
 
-    it('should return `null` for non-existing props', () => {
+    it('returns `null` for non-existing props', () => {
       expect(prototypeChainHasOwn({}, 'test')).toBe(null)
       expect(prototypeChainHasOwn({}, Symbol('test'))).toBe(null)
     })
 
-    it('should return the correct `.prototype` object', () => {
+    it('returns correct `.prototype` object', () => {
       const f1 = function() {}
       const f2 = function() {}
       const f3 = function() {}

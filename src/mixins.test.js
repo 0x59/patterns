@@ -4,23 +4,23 @@ import { inspect } from 'util'
 
 describe('Mixins', () => {
 
-  it('should export the function `withMixins`', function() {
+  it('exports function `withMixins`', function() {
     expect(withMixins).toEqual(expect.any(Function))
   })
 
-  it('should export the function `withMixinsA`', function() {
+  it('exports function `withMixinsA`', function() {
     expect(withMixinsA).toEqual(expect.any(Function))
   })
 
   describe('withMixins()', () => {
 
-    it('should return the superclass', () => {
+    it('returns superclass', () => {
       const TestClass = class {}
 
       expect(withMixins(TestClass)).toBe(TestClass)
     })
 
-    it('should extend the superclass given a proper mixin factory', () => {
+    it('extends superclass given a proper mixin factory', () => {
       const TestClass = class {}
       const Mixin = superclass => class extends superclass {}
       const MixinExtendingSuperclass = withMixins(TestClass, Mixin)
@@ -28,7 +28,7 @@ describe('Mixins', () => {
       expect(Object.getPrototypeOf(MixinExtendingSuperclass)).toBe(TestClass)
     })
 
-    it('should extend the superclass given multiple mixins in proper order', () => {
+    it('extends superclass given multiple mixins in proper order', () => {
       const TestClass = class {}
       const Mixin1 = superclass => class Mixin1 extends superclass {}
       const Mixin2 = superclass => class Mixin2 extends superclass {}
@@ -43,7 +43,7 @@ describe('Mixins', () => {
       expect(inspect(prototype3)).toBe('[class Mixin1 extends TestClass]')
     })
 
-    it('should support `instanceof` operator for applied mixins', () => {
+    it('supports `instanceof` operator for applied mixins', () => {
       const TestClass = class {}
       const Mixin1 = superclass => class extends superclass {}
       const Mixin2 = superclass => class extends superclass {}
@@ -59,7 +59,7 @@ describe('Mixins', () => {
       expect(new Subclass2 instanceof Mixin3).toBe(true)
     })
 
-    it('should not duplicate applied mixins in hierarchies', () => {
+    it('does not duplicate applied mixins in hierarchies', () => {
       const TestClass = class {}
       const Mixin1 = superclass => class extends superclass {}
       const Mixin2 = superclass => class extends superclass {}
@@ -76,13 +76,13 @@ describe('Mixins', () => {
 
   describe('withMixinsA()', () => {
 
-    it('should return the superclass', () => {
+    it('returns superclass', () => {
       const TestClass = class {}
 
       expect(withMixinsA(TestClass)).toBe(TestClass)
     })
 
-    it('should extend the superclass given a proper mixin factory', () => {
+    it('extends superclass given a proper mixin factory', () => {
       const TestClass = class {}
       const Mixin = superclass => class extends superclass {}
       const MixinExtendingSuperclass = withMixinsA(TestClass, [Mixin])
@@ -90,7 +90,7 @@ describe('Mixins', () => {
       expect(Object.getPrototypeOf(MixinExtendingSuperclass)).toBe(TestClass)
     })
 
-    it('should extend the superclass given multiple mixins in proper order', () => {
+    it('extends superclass given multiple mixins in proper order', () => {
       const TestClass = class {}
       const Mixin1 = superclass => class Mixin1 extends superclass {}
       const Mixin2 = superclass => class Mixin2 extends superclass {}
@@ -105,7 +105,7 @@ describe('Mixins', () => {
       expect(inspect(prototype3)).toBe('[class Mixin1 extends TestClass]')
     })
 
-    it('should execute the apply function', () => {
+    it('executes the apply function', () => {
       const applyFn = jest.fn(({ application }) => application)
       const TestClass = class {}
       const Mixin1 = superclass => class Mixin1 extends superclass {}
@@ -116,7 +116,7 @@ describe('Mixins', () => {
       expect(applyFn).toHaveBeenCalledTimes(3) // mixin count
     })
 
-    it('should provide the proper arguments to the apply function', () => {
+    it('provides the proper arguments to the apply function', () => {
       const applyFn = jest.fn(({
         application,
         classHierarchy,
@@ -170,7 +170,7 @@ describe('Mixins', () => {
       expect(applyFn.mock.calls[2][0].superclass).toBe(TestClass)
     })
 
-    it('should support `instanceof` operator for applied mixins', () => {
+    it('supports `instanceof` operator for applied mixins', () => {
       const TestClass = class {}
       const Mixin1 = superclass => class extends superclass {}
       const Mixin2 = superclass => class extends superclass {}
@@ -186,7 +186,7 @@ describe('Mixins', () => {
       expect(new Subclass2 instanceof Mixin3).toBe(true)
     })
 
-    it('should not duplicate applied mixins in hierarchies', () => {
+    it('does not duplicate applied mixins in hierarchies', () => {
       const TestClass = class {}
       const Mixin1 = superclass => class extends superclass {}
       const Mixin2 = superclass => class extends superclass {}
@@ -204,7 +204,7 @@ describe('Mixins', () => {
 
   describe('Examples', () => {
 
-    it('should support a caching feature by extension', () => {
+    it('supports a caching feature by extension', () => {
       const cacheMixinApps = ({ application, classHierarchy, mixinSymbol }) => {
         if( !classHierarchy[mixinSymbol] ) {
           classHierarchy[mixinSymbol] = application
