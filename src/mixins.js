@@ -20,7 +20,7 @@ const	mixinSymbols = new Map()
  * @param internals.mixin {Mixin} Current mixin being applied
  * @param internals.mixins {Mixin[]} All mixins being applied
  * @param internals.mixinSymbol {symbol} Symbol mapping to the mixin reference on the application prototype to support `instanceof`
- * @param internals.mixinSymbols {Map<symbol, Mixin>} From `Mixins` file scope, maps mixin symbols to all mixin declarations executed by `withMixins*`
+ * @param internals.mixinSymbols {Map<symbol, Mixin>} From `mixins.js` file scope, maps mixin symbols to all mixin declarations executed by `withMixins*`
  * @param internals.superclass {class} Class being extended
  * @return {class} Mixin application
  */
