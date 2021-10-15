@@ -6,14 +6,16 @@ const	mixinSymbols = new Map()
 
 /**
  * @typedef Mixin
- * @type {function} Function with a body that defines and returns a class expression extending the parameter
+ * @type {function}
+ * @desc Function with a body that defines and returns a class expression extending the parameter
  * @param superclass {class} Class to extend
  * @return {class} Mixin application binding the superclass to the class expression (definition)
  */
 
 /**
  * @typedef MixinFeature
- * @type {function} Function executed per application to provide additional functionality
+ * @type {function}
+ * @desc Function executed per application to provide additional functionality
  * @param internals {Object} Function scope variables and file scope variables of the mixin application process to aid feature building
  * @param internals.application {class} Mixin application (the effective class hierarchy after applying the current mixin)
  * @param internals.classHierarchy {class} Class hierarchy previous to the current mixin application
