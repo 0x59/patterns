@@ -36,10 +36,10 @@ class TypeGuardError extends TypeError {
  * @typedef TypeGuard
  * @type {Array}
  * @desc Array configuring type validation for an argument
- * @param 0 {TypeValidator} Performs argument validation
- * @param 1 {string} TypeGuardError message to throw when validation returns `false`; unspecified
+ * @property 0 {TypeValidator} Performs argument validation
+ * @property 1 {string} TypeGuardError message to throw when validation returns `false`; unspecified
  * or empty string indicates the default message
- * @param 2 {...any} Additional arguments to TypeValidator
+ * @property 2 {...any} Additional arguments to TypeValidator
  */
 
 /**
@@ -207,7 +207,7 @@ export const makeOnlyOwnBooleans = withTypes(_makeOnlyOwnBooleans,
  * @func prototypeChainHasOwn
  * @param fn {function} Constructor function at the beginning of the chain
  * @param prop {(string|symbol)} Own property of the prototype property object
- * @return {(object|null)} Prototype property object of the constructor function having the own property or null
+ * @return {(Object|null)} Prototype property object of the constructor function having the own property or null
  */
 export const prototypeChainHasOwn = (fn, prop) => {
   let next = fn
