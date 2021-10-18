@@ -15,7 +15,7 @@ import {
   isUnd,
   makeOnlyOwnBooleans,
   prototypeChainHasOwn,
-  withTypes
+  withTypeGuards
 } from './util'
 import { jest } from '@jest/globals'
 
@@ -38,7 +38,7 @@ describe('Util', () => {
       isUnd: expect.any(Function),
       makeOnlyOwnBooleans: expect.any(Function),
       prototypeChainHasOwn: expect.any(Function),
-      withTypes: expect.any(Function)
+      withTypeGuards: expect.any(Function)
     }
 
     expect(Object.keys(Module).sort()).toEqual(Object.keys(expected).sort())
@@ -234,29 +234,19 @@ describe('Util', () => {
 
   describe('isRequired()', () => {
 
-    it('returns a function', () => {
-      const typeFn = jest.fn()
-      expect(isRequired(typeFn)).toEqual(expect.any(Function))
+    it('returns `true` when value is not `undefined`', () => {
+      expect(isRequired('test')).toBe(true)
+      expect(isRequired(() => {})).toBe(true)
+      expect(isRequired(0)).toBe(true)
+      expect(isRequired(1n)).toBe(true)
+      expect(isRequired(Symbol())).toBe(true)
+      expect(isRequired(null)).toBe(true)
+      expect(isRequired(true)).toBe(true)
+      expect(isRequired({})).toBe(true)
     })
 
-    it('skips type fn and returns `false` when arg is undefined', () => {
-      const typeFn = jest.fn()
-      expect(isRequired(typeFn)(void 0)).toBe(false)
-      expect(typeFn).not.toBeCalled()
-    })
-
-    it('executes type fn and returns `false` when arg is invalid', () => {
-      const arg = {}
-      const typeFn = jest.fn(() => false)
-      expect(isRequired(typeFn)(arg)).toBe(false)
-      expect(typeFn).toBeCalled()
-    })
-
-    it('executes type fn and returns `true` when arg is valid', () => {
-      const arg = {}
-      const typeFn = jest.fn(() => true)
-      expect(isRequired(typeFn)(arg)).toBe(true)
-      expect(typeFn).toBeCalled()
+    it('returns `false` when value is `undefined`', () => {
+      expect(isRequired(void 0)).toBe(false)
     })
 
   })
@@ -361,7 +351,7 @@ describe('Util', () => {
 
   })
 
-  describe('withTypes()', () => {
+  describe('withTypeGuards()', () => {
     let targetFn
     let targetWithTypeGuard
     let type1Fn
@@ -380,14 +370,14 @@ describe('Util', () => {
       targetFn = jest.fn()
       type1Fn = jest.fn(() => true)
       type2Fn = jest.fn(() => true)
-      targetWithTypeGuard = withTypes(targetFn,
+      targetWithTypeGuard = withTypeGuards(targetFn,
         [type1Fn, type1ErrMsg, type1Arg1, type1Arg2],
         [type2Fn, type2ErrMsg, type2Arg1, type2Arg2]
       )
     })
 
     it('returns a function', () => {
-      expect(withTypes()).toEqual(expect.any(Function))
+      expect(withTypeGuards()).toEqual(expect.any(Function))
     })
 
     it('calls target with correct arguments', () => {
@@ -418,7 +408,7 @@ describe('Util', () => {
 
     it('throws correct message for invalid arguments', () => {
       type1Fn = jest.fn(() => false)
-      targetWithTypeGuard = withTypes(targetFn,
+      targetWithTypeGuard = withTypeGuards(targetFn,
         [type1Fn, type1ErrMsg, type1Arg1, type1Arg2],
         [type2Fn, type2ErrMsg, type2Arg1, type2Arg2]
       )
@@ -429,7 +419,7 @@ describe('Util', () => {
 
       type1Fn = jest.fn(() => true)
       type2Fn = jest.fn(() => false)
-      targetWithTypeGuard = withTypes(targetFn,
+      targetWithTypeGuard = withTypeGuards(targetFn,
         [type1Fn, type1ErrMsg, type1Arg1, type1Arg2],
         [type2Fn, type2ErrMsg, type2Arg1, type2Arg2]
       )
@@ -441,7 +431,7 @@ describe('Util', () => {
 
     it('throws a default error message', () => {
       type2Fn = jest.fn(() => false)
-      targetWithTypeGuard = withTypes(targetFn,
+      targetWithTypeGuard = withTypeGuards(targetFn,
         [type1Fn, type1ErrMsg, type1Arg1, type1Arg2],
         [type2Fn]
       )

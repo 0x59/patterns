@@ -28,6 +28,7 @@
   "homepage": "https://github.com/0x59/patterns#readme",
   "devDependencies": {
     "@babel/core": "^7.15.0",
+    "@babel/plugin-proposal-throw-expressions": "^7.14.5",
     "babel-jest": "^27.0.6",
     "babel-plugin-transform-object-hasown": "^1.1.0",
     "eslint": "^7.32.0",

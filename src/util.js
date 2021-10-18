@@ -13,13 +13,13 @@ const {
   STR
 } = typeNames
 
-const defaultTypeGuardErrorMessage = 'Invalid argument.'
-const typeGuardErrorName = 'TypeGuardError'
-
 class TypeGuardError extends TypeError {
-  constructor(message = defaultTypeGuardErrorMessage, ...rest) {
+  static defaultMessage = 'Invalid argument.'
+  static name = 'TypeGuardError'
+
+  constructor(message = TypeGuardError.defaultMessage, ...rest) {
     super(message, ...rest)
-    this.name = typeGuardErrorName
+    this.name = TypeGuardError.name
   }
 }
 
@@ -28,8 +28,8 @@ class TypeGuardError extends TypeError {
  * @type {function}
  * @desc Function to perform argument validation
  * @param value {any} Value to validate
- * @param args {...any} Additional validator arguments to support validation
- * @return {boolean}
+ * @param args {...any} Additional arguments to support validation
+ * @return {boolean} Result of validation
  */
 
 /**
@@ -44,35 +44,28 @@ class TypeGuardError extends TypeError {
 
 /**
  * Type guard decorator for functions
- * @func withTypes
+ * @func withTypeGuards
  * @param target {function} Function to execute with valid arguments
  * @param types {...TypeGuardType} Type guard configurations per target argument
+ * @throws {TypeGuardError}
  * @return {function} Target function wrapped in type guards for target argument validation
  */
-export const withTypes = (target, ...types) => (...targetArgs) => {
-  for (const [index, arg] of targetArgs.entries()) {
-    const [typeFn, message, ...typeArgs] = types[index] || types[types.length - 1]
-    if (!typeFn(arg, ...typeArgs)) {
-      throw new TypeGuardError(message)
-    }
-  }
+export const withTypeGuards = (target, ...types) => (...targetArgs) => {
+  targetArgs.forEach((arg, index) => {
+    const [typeFnsUn, message, ...typeArgs] = types[index] || types[types.length - 1]
+    const typeFns = Array.isArray(typeFnsUn) ? typeFnsUn : [typeFnsUn]
+
+    typeFns.forEach(typeFn => typeFn(arg, ...typeArgs) || throw new TypeGuardError(message))
+  })
 
   return target(...targetArgs)
 }
 
 /**
- * Wraps type validators to require arguments
- * @func isRequired
- * @param typeFn {TypeValidator} Type validator to wrap
- * @return {function} Type validator wrapped with required argument test
- */
-export const isRequired = typeFn => (arg, ...rest) => arg !== void 0 && typeFn(arg, ...rest)
-
-/**
  * Wraps Array's `every` instance method
  * @func _isArrOf
  * @param value {Array} Array containing values to test
- * @param typeFn {function} Callback function to test each value
+ * @param typeFn {TypeValidator} Callback function to test each value
  * @return {boolean} `true` if every value in the array tests true; otherwise `false`
  */
 export const _isArrOf = (value, typeFn) => value.every(typeFn)
@@ -82,7 +75,7 @@ export const _isArrOf = (value, typeFn) => value.every(typeFn)
  * array of properties with object properties to do the same
  * @func _makeOnlyOwnBooleans
  * @param obj {Object} Object containing properties to convert to boolean
- * @param props {string[]} Array of property names for intersection with object properties
+ * @param [props] {string[]} Array of property names for intersection with object properties
  * @return {Object} Object of booleans
  */
 export const _makeOnlyOwnBooleans = (obj, ...props) => {
@@ -105,6 +98,7 @@ export const _makeOnlyOwnBooleans = (obj, ...props) => {
 
 /**
  * Wraps Array's 'isArray' static method
+ * @type {TypeValidator}
  * @func isArr
  * @param value {any} Value (operand) to test
  * @return {boolean} Result of the test
@@ -113,6 +107,7 @@ export const isArr = value => Array.isArray(value)
 
 /**
  * Wraps `typeof` operator for `bigint`
+ * @type {TypeValidator}
  * @func isBigInt
  * @param value {any} Value (operand) to test
  * @return {boolean} Result of the test
@@ -121,6 +116,7 @@ export const isBigInt = value => typeof value === 'bigint'
 
 /**
  * Wraps `typeof` operator for `boolean`
+ * @type {TypeValidator}
  * @func isBool
  * @param value {any} Value (operand) to test
  * @return {boolean} Result of the test
@@ -129,6 +125,7 @@ export const isBool = value => typeof value === 'boolean'
 
 /**
  * Wraps `typeof` operator for `function`
+ * @type {TypeValidator}
  * @func isFn
  * @param value {any} Value (operand) to test
  * @return {boolean} Result of the test
@@ -137,6 +134,7 @@ export const isFn = value => typeof value === 'function'
 
 /**
  * Wraps `typeof` operator for `number`
+ * @type {TypeValidator}
  * @func isNum
  * @param value {any} Value (operand) to test
  * @return {boolean} Result of the test
@@ -145,6 +143,7 @@ export const isNum = value => typeof value === 'number'
 
 /**
  * Wraps `typeof` operator for `object`
+ * @type {TypeValidator}
  * @func isObj
  * @param value {any} Value (operand) to test
  * @return {boolean} Result of the test
@@ -152,7 +151,17 @@ export const isNum = value => typeof value === 'number'
 export const isObj = value => typeof value === 'object'
 
 /**
+ * Test for not `undefined`
+ * @type {TypeValidator}
+ * @func isRequired
+ * @param value {any} Value (operand) to test
+ * @return {boolean} Result of the test
+ */
+export const isRequired = value => value !== void 0
+
+/**
  * Wraps `typeof` operator for `string`
+ * @type {TypeValidator}
  * @func isStr
  * @param value {any} Value (operand) to test
  * @return {boolean} Result of the test
@@ -161,6 +170,7 @@ export const isStr = value => typeof value === 'string'
 
 /**
  * Wraps `typeof` operator for `symbol`
+ * @type {TypeValidator}
  * @func isSym
  * @param value {any} Value (operand) to test
  * @return {boolean} Result of the test
@@ -168,23 +178,26 @@ export const isStr = value => typeof value === 'string'
 export const isSym = value => typeof value === 'symbol'
 
 /**
- * Wraps `typeof` operator for `undefined`
+ * Test for `undefined`. Note that this does not use the `typeof` operator. To test
+ * a value without producing a `ReferenceError`, use `typeof` directly.
+ * @type {TypeValidator}
  * @func isUnd
  * @param value {any} Value (operand) to test
  * @return {boolean} Result of the test
  */
-export const isUnd = value => typeof value === 'undefined'
+export const isUnd = value => value === void 0
 
 /**
  * Wraps `_isArrOf` with type guards; see {@link module:Util~_isArrOf}
+ * @type {TypeValidator}
  * @func isArrOf
  * @param value {Array} Is required
- * @param typeFn {function} Is required
+ * @param typeFn {TypeValidator} Is required
  * @return {boolean}
  */
-export const isArrOf = withTypes(_isArrOf,
-  [isRequired(isArr)],
-  [isRequired(isFn)]
+export const isArrOf = withTypeGuards(_isArrOf,
+  [[isRequired, isArr]],
+  [[isRequired, isFn]]
 )
 
 /**
@@ -194,8 +207,8 @@ export const isArrOf = withTypes(_isArrOf,
  * @param props {string[]} Optional
  * @return {boolean}
  */
-export const makeOnlyOwnBooleans = withTypes(_makeOnlyOwnBooleans,
-  [isRequired(isObj), 'Object of booleans is required.'],
+export const makeOnlyOwnBooleans = withTypeGuards(_makeOnlyOwnBooleans,
+  [[isRequired, isObj], 'Object of booleans is required.'],
   [isStr, 'Property names are required.'],
 )
 
@@ -207,7 +220,7 @@ export const makeOnlyOwnBooleans = withTypes(_makeOnlyOwnBooleans,
  * @func prototypeChainHasOwn
  * @param fn {function} Constructor function at the beginning of the chain
  * @param prop {(string|symbol)} Own property of the prototype property object
- * @return {(Object|null)} Prototype property object of the constructor function having the own property or null
+ * @return {?Object} Prototype property object of the constructor function having the own property or null
  */
 export const prototypeChainHasOwn = (fn, prop) => {
   let next = fn
