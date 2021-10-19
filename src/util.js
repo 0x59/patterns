@@ -166,7 +166,7 @@ export const isRequired = value => value !== void 0
 /**
  * Pass test when `undefined`
  * @func isOptional
- * @param typeFn {any} Type validator to call if not `undefined`
+ * @param typeFn {TypeValidator} Type validator to call if not `undefined`
  * @return {TypeValidator} Original test wrapped to be optional
  */
 export const isOptional = typeFn => (value, ...typeArgs) => value === void 0 || typeFn(value, ...typeArgs)
@@ -221,7 +221,7 @@ export const isArrOf = withTypeGuards(_isArrOf,
  */
 export const makeOnlyOwnBooleans = withTypeGuards(_makeOnlyOwnBooleans,
   [isObj, 'Object of booleans is required.'],
-  [isOptional(isStr), 'Property names are required.'],
+  [isOptional(isStr), 'Property names required as strings.'],
 )
 
 /**

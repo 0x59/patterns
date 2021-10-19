@@ -115,7 +115,7 @@ describe('Util', () => {
     })
 
     it('optional argument must be an array', () => {
-      expect(() => makeOnlyOwnBooleans({}, 0)).toThrow()
+      expect(() => makeOnlyOwnBooleans({}, 0)).toThrow(TypeGuardError)
       expect(() => makeOnlyOwnBooleans({}, 'test1')).not.toThrow()
     })
 
