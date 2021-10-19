@@ -9,12 +9,14 @@ import {
   isFn,
   isNum,
   isObj,
+  isOptional,
   isRequired,
   isStr,
   isSym,
   isUnd,
   makeOnlyOwnBooleans,
   prototypeChainHasOwn,
+  TypeGuardError,
   withTypeGuards
 } from './util'
 import { jest } from '@jest/globals'
@@ -32,12 +34,14 @@ describe('Util', () => {
       isFn: expect.any(Function),
       isNum: expect.any(Function),
       isObj: expect.any(Function),
+      isOptional: expect.any(Function),
       isRequired: expect.any(Function),
       isStr: expect.any(Function),
       isSym: expect.any(Function),
       isUnd: expect.any(Function),
       makeOnlyOwnBooleans: expect.any(Function),
       prototypeChainHasOwn: expect.any(Function),
+      TypeGuardError: expect.any(Function),
       withTypeGuards: expect.any(Function)
     }
 
@@ -71,13 +75,13 @@ describe('Util', () => {
 
     it('requires an array', () => {
       const isType = jest.fn(() => true)
-      expect(() => isArrOf({}, isType)).toThrow()
+      expect(() => isArrOf(void 0, isType)).toThrowError(TypeGuardError)
       expect(() => isArrOf([], isType)).not.toThrow()
     })
 
     it('requires a type function', () => {
       const isType = jest.fn(() => true)
-      expect(() => isArrOf([])).toThrow()
+      expect(() => isArrOf([])).toThrowError(TypeGuardError)
       expect(() => isArrOf([], isType)).not.toThrow()
     })
 
@@ -106,7 +110,7 @@ describe('Util', () => {
   describe('makeOnlyOwnBooleans()', () => {
 
     it('requires an object', () => {
-      expect(() => makeOnlyOwnBooleans(0)).toThrow()
+      expect(() => makeOnlyOwnBooleans(0)).toThrowError(TypeGuardError)
       expect(() => makeOnlyOwnBooleans({})).not.toThrow()
     })
 
@@ -124,6 +128,7 @@ describe('Util', () => {
     })
 
     it('returns `false` when value is not an array', () => {
+      expect(isArr(void 0)).toBe(false)
       expect(isArr('test')).toBe(false)
       expect(isArr(() => {})).toBe(false)
       expect(isArr(0)).toBe(false)
@@ -228,6 +233,30 @@ describe('Util', () => {
       expect(isObj(Symbol())).toBe(false)
       expect(isObj(true)).toBe(false)
       expect(isObj(void 0)).toBe(false)
+    })
+
+  })
+
+  describe('isOptional()', () => {
+
+    it('returns a function', () => {
+      const typeFn = jest.fn(() => true)
+      expect(isOptional(typeFn)).toEqual(expect.any(Function))
+    })
+
+    it('returns `true` when value is `undefined` and skips type fn', () => {
+      const typeFn = jest.fn(() => true)
+      expect(isOptional(typeFn)(void 0)).toBe(true)
+      expect(typeFn).not.toBeCalled()
+    })
+
+    it('returns `true` with defined value and runs type fn with args', () => {
+      const typeFn = jest.fn(() => true)
+      const typeArg1 = {}
+      const typeArg2 = {}
+
+      expect(isOptional(typeFn)(0, typeArg1, typeArg2)).toBe(true)
+      expect(typeFn).toBeCalledWith(0, typeArg1, typeArg2)
     })
 
   })
@@ -404,6 +433,15 @@ describe('Util', () => {
       expect(type2Fn).toBeCalledTimes(2)
       expect(type2Fn).toBeCalledWith(arg2, type2Arg1, type2Arg2)
       expect(type2Fn).lastCalledWith(arg3, type2Arg1, type2Arg2)
+    })
+
+    it('uses `undefined` to run remaining type tests', () => {
+      targetWithTypeGuard()
+
+      expect(type1Fn).toBeCalledTimes(1)
+      expect(type1Fn).toBeCalledWith(void 0, type1Arg1, type1Arg2)
+      expect(type2Fn).toBeCalledTimes(1)
+      expect(type2Fn).toBeCalledWith(void 0, type2Arg1, type2Arg2)
     })
 
     it('throws correct message for invalid arguments', () => {

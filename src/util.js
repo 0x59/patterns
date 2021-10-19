@@ -13,7 +13,7 @@ const {
   STR
 } = typeNames
 
-class TypeGuardError extends TypeError {
+export class TypeGuardError extends TypeError {
   static defaultMessage = 'Invalid argument.'
   static name = 'TypeGuardError'
 
@@ -52,11 +52,15 @@ class TypeGuardError extends TypeError {
  */
 export const withTypeGuards = (target, ...types) => (...targetArgs) => {
   targetArgs.forEach((arg, index) => {
-    const [typeFnsUn, message, ...typeArgs] = types[index] || types[types.length - 1]
-    const typeFns = Array.isArray(typeFnsUn) ? typeFnsUn : [typeFnsUn]
-
-    typeFns.forEach(typeFn => typeFn(arg, ...typeArgs) || throw new TypeGuardError(message))
+    const [typeFn, message, ...typeArgs] = types[index] || types[types.length - 1]
+    typeFn(arg, ...typeArgs) || throw new TypeGuardError(message)
   })
+
+  if (targetArgs.length < types.length) {
+    for (const [typeFn, message, ...typeArgs] of types.slice(targetArgs.length)) {
+      typeFn(void 0, ...typeArgs) || throw new TypeGuardError(message)
+    }
+  }
 
   return target(...targetArgs)
 }
@@ -160,6 +164,14 @@ export const isObj = value => typeof value === 'object'
 export const isRequired = value => value !== void 0
 
 /**
+ * Pass test when `undefined`
+ * @func isOptional
+ * @param typeFn {any} Type validator to call if not `undefined`
+ * @return {TypeValidator} Original test wrapped to be optional
+ */
+export const isOptional = typeFn => (value, ...typeArgs) => value === void 0 || typeFn(value, ...typeArgs)
+
+/**
  * Wraps `typeof` operator for `string`
  * @type {TypeValidator}
  * @func isStr
@@ -196,8 +208,8 @@ export const isUnd = value => value === void 0
  * @return {boolean}
  */
 export const isArrOf = withTypeGuards(_isArrOf,
-  [[isRequired, isArr]],
-  [[isRequired, isFn]]
+  [isArr],
+  [isFn]
 )
 
 /**
@@ -208,8 +220,8 @@ export const isArrOf = withTypeGuards(_isArrOf,
  * @return {boolean}
  */
 export const makeOnlyOwnBooleans = withTypeGuards(_makeOnlyOwnBooleans,
-  [[isRequired, isObj], 'Object of booleans is required.'],
-  [isStr, 'Property names are required.'],
+  [isObj, 'Object of booleans is required.'],
+  [isOptional(isStr), 'Property names are required.'],
 )
 
 /**
