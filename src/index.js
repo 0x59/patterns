@@ -1,4 +1,6 @@
 export { withMixins, withMixinsA } from './mixins'
+export { ringBuffer } from './ringBuffer'
+export { Symbols } from './symbolRegistry'
 export {
   isUnd,
   isBool,
@@ -10,4 +12,3 @@ export {
   isObj,
   prototypeChainHasOwn
 } from './util'
-export { Symbols } from './symbolRegistry'
