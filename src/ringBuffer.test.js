@@ -17,17 +17,17 @@ describe('RingBuffer', () => {
 
   describe('RingBuffer()', () => {
 
-    it('requires `size` argument', () => {
+    it('requires `size` constructor argument', () => {
       expect(() => new RingBuffer).toThrow()
       expect(() => new RingBuffer(4)).not.toThrow()
     })
 
-    it('has read-only empty value', () => {
+    it('has static read-only `empty` value', () => {
       expect(() => RingBuffer.empty = 'test').toThrow()
       expect(RingBuffer.empty).not.toBe(void 0)
     })
 
-    it('returns empty value when empty', () => {
+    it('returns `empty` value when empty', () => {
       const b = new RingBuffer(4)
 
       expect(b.read()).toBe(RingBuffer.empty)
