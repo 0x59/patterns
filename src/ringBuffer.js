@@ -2,7 +2,7 @@ export class RingBuffer {
 
   static #empty = Symbol()
   static get empty() {
-    RingBuffer.#empty
+    return RingBuffer.#empty
   }
 
   #head

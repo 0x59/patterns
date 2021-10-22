@@ -24,6 +24,7 @@ describe('RingBuffer', () => {
 
     it('has read-only empty value', () => {
       expect(() => RingBuffer.empty = 'test').toThrow()
+      expect(RingBuffer.empty).not.toBe(void 0)
     })
 
     it('returns empty value when empty', () => {
