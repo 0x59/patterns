@@ -6,56 +6,60 @@ export class RingBuffer {
   }
 
   #head
-  #queue
+  #items
   #size
+  #maxSize
   #tail
 
-  constructor(size = -1) {
+  constructor(maxSize = -1) {
     this.#head = 0
-    this.#queue = new Array(size).fill(RingBuffer.empty)
-    this.#size = size
+    this.#items = new Array(maxSize)
+    this.#maxSize = maxSize
+    this.#size = 0
     this.#tail = 0
   }
 
-  read = () => {
-    let item
+  isEmpty = () => this.#size === 0
 
-    if ((item = this.#read()) !== RingBuffer.empty) {
-      this.#clearTail()
-      this.#advanceTail()
+  isFull = () => this.#size === this.#maxSize
+
+  read = () => {
+    let item = RingBuffer.empty
+
+    if (!this.isEmpty()) {
+      item = this.#read()
+      this.#moveTail()
+      --this.#size
     }
 
     return item
   }
 
   readAll = fn => {
-    let item
-
-    while ((item = this.#read()) !== RingBuffer.empty) {
-      this.#clearTail()
-      this.#advanceTail()
-      fn(item)
+    while (!this.isEmpty()) {
+      fn(this.#read())
+      this.#moveTail()
+      --this.#size
     }
   }
+
+  size = () => this.#size
 
   write = item => {
-    if (this.#isOverrun()) {
-      this.#advanceTail()
-    }
     this.#write(item)
-    this.#advanceHead()
+    this.#moveHead()
+
+    this.isFull()
+      ? this.#moveTail()
+      : ++this.#size
   }
 
-  #advanceHead = () => this.#head = (this.#head + 1) % this.#size
+  #moveHead = () => this.#head = ++this.#head % this.#maxSize
 
-  #advanceTail = () => this.#tail = (this.#tail + 1) % this.#size
+  #moveTail = () => this.#tail = ++this.#tail % this.#maxSize
 
-  #clearTail = () => this.#queue[this.#tail] = RingBuffer.empty
+  #read = () => this.#items[this.#tail]
 
-  #isOverrun = () => this.#queue[this.#head] !== RingBuffer.empty
-
-  #read = () => this.#queue[this.#tail]
-
-  #write = item => this.#queue[this.#head] = item
+  #write = item => this.#items[this.#head] = item
 
 }
