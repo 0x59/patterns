@@ -22,16 +22,23 @@ describe('RingBuffer', () => {
       expect(() => new RingBuffer(4)).not.toThrow()
     })
 
-    it('has static read-only `empty` value', () => {
+    it('has static read-only `empty` property', () => {
       expect(() => RingBuffer.empty = 'test').toThrow()
       expect(RingBuffer.empty).not.toBe(void 0)
+    })
+
+    it('has instance read-only `size` property', () => {
+      const b = new RingBuffer(4)
+
+      expect(() => b.size = 10).toThrow()
+      expect(b.size).toBe(0)
     })
 
     it('returns `empty` after initialized', () => {
       const b = new RingBuffer(4)
 
       expect(b.read()).toBe(RingBuffer.empty)
-      expect(b.size()).toBe(0)
+      expect(b.size).toBe(0)
     })
 
     it('writes and reads one item', () => {
@@ -39,9 +46,9 @@ describe('RingBuffer', () => {
       const testItem = {}
 
       b.write(testItem)
-      expect(b.size()).toBe(1)
+      expect(b.size).toBe(1)
       expect(b.read()).toBe(testItem)
-      expect(b.size()).toBe(0)
+      expect(b.size).toBe(0)
       expect(b.read()).toBe(RingBuffer.empty)
     })
 
@@ -52,12 +59,12 @@ describe('RingBuffer', () => {
 
       testItems.forEach(item => b.write(item))
 
-      expect(b.size()).toBe(testItems.length)
+      expect(b.size).toBe(testItems.length)
 
       b.readAll(item => readItems.push(item))
 
       expect(readItems).toEqual(testItems)
-      expect(b.size()).toBe(0)
+      expect(b.size).toBe(0)
     })
 
     it('reads last `maxSize` items', () => {
@@ -68,12 +75,12 @@ describe('RingBuffer', () => {
 
       testItems.forEach(item => b.write(item))
 
-      expect(b.size()).toBe(maxSize)
+      expect(b.size).toBe(maxSize)
 
       b.readAll(item => readItems.push(item))
 
       expect(readItems).toEqual(testItems.slice(testItems.length - maxSize))
-      expect(b.size()).toBe(0)
+      expect(b.size).toBe(0)
     })
   })
 })

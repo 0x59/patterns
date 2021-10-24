@@ -1,14 +1,12 @@
 export class RingBuffer {
 
   static #empty = Symbol()
-  static get empty() {
-    return RingBuffer.#empty
-  }
+  static get empty() { return RingBuffer.#empty }
 
   #head
   #items
-  #size
   #maxSize
+  #size
   #tail
 
   constructor(maxSize = -1) {
@@ -18,6 +16,8 @@ export class RingBuffer {
     this.#size = 0
     this.#tail = 0
   }
+
+  get size() { return this.#size }
 
   isEmpty = () => this.#size === 0
 
@@ -42,8 +42,6 @@ export class RingBuffer {
       --this.#size
     }
   }
-
-  size = () => this.#size
 
   write = item => {
     this.#write(item)
