@@ -242,9 +242,9 @@ export function withTypeGuards(target, ...types) {
     })
 
     if (targetArgs.length < types.length) {
-      for (const [typeFn, message, ...typeArgs] of types.slice(targetArgs.length)) {
+      types.slice(targetArgs.length).forEach(([typeFn, message, ...typeArgs]) => {
         typeFn(void 0, ...typeArgs) || throw new TypeGuardError(message)
-      }
+      })
     }
 
     return target(...targetArgs)
