@@ -27,8 +27,8 @@ export class TypeGuardError extends TypeError {
  * Wraps `_isArrOf` with type guards; see {@link module:Util~_isArrOf}
  * @type {TypeValidator}
  * @func isArrOf
- * @param value {Array} Is required
- * @param typeFn {TypeValidator} Is required
+ * @param value {Array} Required
+ * @param typeFn {TypeValidator} Required
  * @return {boolean}
  */
 export const isArrOf = withTypeGuards(_isArrOf,
@@ -91,6 +91,14 @@ export function _makeOnlyOwnBooleans(obj, ...props) {
  * @return {boolean} Result of the test
  */
 export function isArr(value) { return Array.isArray(value) }
+
+/**
+ * Pass with no test
+ * @type {TypeValidator}
+ * @func isAny
+ * @return {boolean} Returns `true`
+ */
+export function isAny() { return true }
 
 /**
  * Wraps `typeof` operator for `bigint`
@@ -236,15 +244,12 @@ export function prototypeChainHasOwn(fn, prop) {
  */
 export function withTypeGuards(target, ...types) {
   return (...targetArgs) => {
-    targetArgs.forEach((arg, index) => {
-      const [typeFn, message, ...typeArgs] = types[index] || types[types.length - 1]
-      typeFn(arg, ...typeArgs) || throw new TypeGuardError(message)
-    })
+    let index = 0
+    let length = Math.max(targetArgs.length, types.length)
 
-    if (targetArgs.length < types.length) {
-      types.slice(targetArgs.length).forEach(([typeFn, message, ...typeArgs]) => {
-        typeFn(void 0, ...typeArgs) || throw new TypeGuardError(message)
-      })
+    for (; index < length; ++index) {
+      const [typeFn, message, ...typeArgs] = types[index] || types[types.length - 1]
+      typeFn(targetArgs[index], ...typeArgs) || throw new TypeGuardError(message)
     }
 
     return target(...targetArgs)

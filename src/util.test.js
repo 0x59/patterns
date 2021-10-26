@@ -2,6 +2,7 @@ import * as Module from './util'
 import {
   _isArrOf,
   _makeOnlyOwnBooleans,
+  isAny,
   isArr,
   isArrOf,
   isBigInt,
@@ -27,6 +28,7 @@ describe('Util', () => {
     const expected = {
       _isArrOf: expect.any(Function),
       _makeOnlyOwnBooleans: expect.any(Function),
+      isAny: expect.any(Function),
       isArr: expect.any(Function),
       isArrOf: expect.any(Function),
       isBigInt: expect.any(Function),
@@ -117,6 +119,23 @@ describe('Util', () => {
     it('optional argument must be an array', () => {
       expect(() => makeOnlyOwnBooleans({}, 0)).toThrow(TypeGuardError)
       expect(() => makeOnlyOwnBooleans({}, 'test1')).not.toThrow()
+    })
+
+  })
+
+  describe('isAny()', () => {
+
+    it('returns `true` for any value', () => {
+      expect(isAny('test')).toBe(true)
+      expect(isAny(() => {})).toBe(true)
+      expect(isAny(0)).toBe(true)
+      expect(isAny(1n)).toBe(true)
+      expect(isAny(Symbol())).toBe(true)
+      expect(isAny([])).toBe(true)
+      expect(isAny(null)).toBe(true)
+      expect(isAny(true)).toBe(true)
+      expect(isAny(void 0)).toBe(true)
+      expect(isAny({})).toBe(true)
     })
 
   })
