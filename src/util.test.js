@@ -22,6 +22,33 @@ import {
 } from './util'
 import { jest } from '@jest/globals'
 
+const makeTypeValues = () => [
+  ['array', []],
+  ['bigint', 0n],
+  ['boolean', true],
+  ['function', () => {}],
+  ['null', null],
+  ['number', 0],
+  ['object', {}],
+  ['string', ''],
+  ['symbol', Symbol()],
+  ['undefined', void 0]
+]
+
+function expectTypeTestsToBe({fn, result, not = false}, ...typeNames) {
+  const types = makeTypeValues().filter(
+    ([name]) => not ? !typeNames.includes(name) : typeNames.includes(name)
+  )
+
+  types.forEach(([, value]) => {
+    expect(fn(value)).toBe(result)
+  })
+}
+
+function expectAllTypeTestsExceptToBe({fn, result}, ...typeNames) {
+  return expectTypeTestsToBe({fn, result, not: true}, ...typeNames)
+}
+
 describe('Util', () => {
 
   it('exports correct module interface', () => {
@@ -126,16 +153,7 @@ describe('Util', () => {
   describe('isAny()', () => {
 
     it('returns `true` for any value', () => {
-      expect(isAny('test')).toBe(true)
-      expect(isAny(() => {})).toBe(true)
-      expect(isAny(0)).toBe(true)
-      expect(isAny(1n)).toBe(true)
-      expect(isAny(Symbol())).toBe(true)
-      expect(isAny([])).toBe(true)
-      expect(isAny(null)).toBe(true)
-      expect(isAny(true)).toBe(true)
-      expect(isAny(void 0)).toBe(true)
-      expect(isAny({})).toBe(true)
+      expectAllTypeTestsExceptToBe({fn: isAny, result: true})
     })
 
   })
@@ -147,15 +165,7 @@ describe('Util', () => {
     })
 
     it('returns `false` when value is not an array', () => {
-      expect(isArr(void 0)).toBe(false)
-      expect(isArr('test')).toBe(false)
-      expect(isArr(() => {})).toBe(false)
-      expect(isArr(0)).toBe(false)
-      expect(isArr(1n)).toBe(false)
-      expect(isArr(Symbol())).toBe(false)
-      expect(isArr(null)).toBe(false)
-      expect(isArr(true)).toBe(false)
-      expect(isArr({})).toBe(false)
+      expectAllTypeTestsExceptToBe({fn: isArr, result: false}, 'array')
     })
 
   })
@@ -167,14 +177,7 @@ describe('Util', () => {
     })
 
     it('returns `false` when value is not a bigint', () => {
-      expect(isBigInt('test')).toBe(false)
-      expect(isBigInt(() => {})).toBe(false)
-      expect(isBigInt(1)).toBe(false)
-      expect(isBigInt(Symbol())).toBe(false)
-      expect(isBigInt(null)).toBe(false)
-      expect(isBigInt(true)).toBe(false)
-      expect(isBigInt(void 0)).toBe(false)
-      expect(isBigInt({})).toBe(false)
+      expectAllTypeTestsExceptToBe({fn: isBigInt, result: false}, 'bigint')
     })
 
   })
@@ -187,14 +190,7 @@ describe('Util', () => {
     })
 
     it('returns `false` when value is not boolean', () => {
-      expect(isBool('test')).toBe(false)
-      expect(isBool(() => {})).toBe(false)
-      expect(isBool(0)).toBe(false)
-      expect(isBool(1n)).toBe(false)
-      expect(isBool(Symbol())).toBe(false)
-      expect(isBool(null)).toBe(false)
-      expect(isBool(void 0)).toBe(false)
-      expect(isBool({})).toBe(false)
+      expectAllTypeTestsExceptToBe({fn: isBool, result: false}, 'boolean')
     })
 
   })
@@ -206,14 +202,7 @@ describe('Util', () => {
     })
 
     it('returns `false` when value is not a function', () => {
-      expect(isFn('test')).toBe(false)
-      expect(isFn(1)).toBe(false)
-      expect(isFn(1n)).toBe(false)
-      expect(isFn(Symbol())).toBe(false)
-      expect(isFn(null)).toBe(false)
-      expect(isFn(true)).toBe(false)
-      expect(isFn(void 0)).toBe(false)
-      expect(isFn({})).toBe(false)
+      expectAllTypeTestsExceptToBe({fn: isFn, result: false}, 'function')
     })
 
   })
@@ -225,33 +214,19 @@ describe('Util', () => {
     })
 
     it('returns `false` when value is not a number', () => {
-      expect(isNum('test')).toBe(false)
-      expect(isNum(() => {})).toBe(false)
-      expect(isNum(1n)).toBe(false)
-      expect(isNum(Symbol())).toBe(false)
-      expect(isNum(null)).toBe(false)
-      expect(isNum(true)).toBe(false)
-      expect(isNum(void 0)).toBe(false)
-      expect(isNum({})).toBe(false)
+      expectAllTypeTestsExceptToBe({fn: isNum, result: false}, 'number')
     })
 
   })
 
   describe('isObj()', () => {
 
-    it('returns `true` when value is a object', () => {
-      expect(isObj({})).toBe(true)
-      expect(isObj(null)).toBe(true)
+    it('returns `true` when value is an object', () => {
+      expectTypeTestsToBe({fn: isObj, result: true}, 'object', 'null', 'array')
     })
 
-    it('returns `false` when value is not a object', () => {
-      expect(isObj('test')).toBe(false)
-      expect(isObj(() => {})).toBe(false)
-      expect(isObj(1)).toBe(false)
-      expect(isObj(1n)).toBe(false)
-      expect(isObj(Symbol())).toBe(false)
-      expect(isObj(true)).toBe(false)
-      expect(isObj(void 0)).toBe(false)
+    it('returns `false` when value is not an object', () => {
+      expectAllTypeTestsExceptToBe({fn: isObj, result: false}, 'object', 'null', 'array')
     })
 
   })
@@ -283,14 +258,7 @@ describe('Util', () => {
   describe('isRequired()', () => {
 
     it('returns `true` when value is not `undefined`', () => {
-      expect(isRequired('test')).toBe(true)
-      expect(isRequired(() => {})).toBe(true)
-      expect(isRequired(0)).toBe(true)
-      expect(isRequired(1n)).toBe(true)
-      expect(isRequired(Symbol())).toBe(true)
-      expect(isRequired(null)).toBe(true)
-      expect(isRequired(true)).toBe(true)
-      expect(isRequired({})).toBe(true)
+      expectAllTypeTestsExceptToBe({fn: isRequired, result: true}, 'undefined')
     })
 
     it('returns `false` when value is `undefined`', () => {
@@ -306,14 +274,7 @@ describe('Util', () => {
     })
 
     it('returns `false` when value is not a string', () => {
-      expect(isStr(() => {})).toBe(false)
-      expect(isStr(1)).toBe(false)
-      expect(isStr(1n)).toBe(false)
-      expect(isStr(Symbol())).toBe(false)
-      expect(isStr(null)).toBe(false)
-      expect(isStr(true)).toBe(false)
-      expect(isStr(void 0)).toBe(false)
-      expect(isStr({})).toBe(false)
+      expectAllTypeTestsExceptToBe({fn: isStr, result: false}, 'string')
     })
 
   })
@@ -325,14 +286,7 @@ describe('Util', () => {
     })
 
     it('returns `false` when value is not a symbol', () => {
-      expect(isSym('test')).toBe(false)
-      expect(isSym(() => {})).toBe(false)
-      expect(isSym(1)).toBe(false)
-      expect(isSym(1n)).toBe(false)
-      expect(isSym(null)).toBe(false)
-      expect(isSym(true)).toBe(false)
-      expect(isSym(void 0)).toBe(false)
-      expect(isSym({})).toBe(false)
+      expectAllTypeTestsExceptToBe({fn: isSym, result: false}, 'symbol')
     })
 
   })
@@ -344,36 +298,23 @@ describe('Util', () => {
     })
 
     it('returns `false` when value is not `undefined`', () => {
-      expect(isUnd('test')).toBe(false)
-      expect(isUnd(() => {})).toBe(false)
-      expect(isUnd(0)).toBe(false)
-      expect(isUnd(1n)).toBe(false)
-      expect(isUnd(Symbol())).toBe(false)
-      expect(isUnd(null)).toBe(false)
-      expect(isUnd(true)).toBe(false)
-      expect(isUnd({})).toBe(false)
+      expectAllTypeTestsExceptToBe({fn: isUnd, result: false}, 'undefined')
     })
 
   })
 
   describe('prototypeChainHasOwn()', () => {
 
-    it('returns `null` for non-objects', () => {
-      expect(prototypeChainHasOwn('test')).toBe(null)
-      expect(prototypeChainHasOwn(0)).toBe(null)
-      expect(prototypeChainHasOwn(1n)).toBe(null)
-      expect(prototypeChainHasOwn(Symbol())).toBe(null)
-      expect(prototypeChainHasOwn(null)).toBe(null)
-      expect(prototypeChainHasOwn(true)).toBe(null)
-      expect(prototypeChainHasOwn(void 0)).toBe(null)
+    it('returns `null` for all primitives', () => {
+      expectAllTypeTestsExceptToBe(
+        {fn: prototypeChainHasOwn, result: null},
+        'array', 'object', 'function'
+      )
     })
 
     it('returns `null` for props other than strings and symbols', () => {
-      expect(prototypeChainHasOwn({}, 0)).toBe(null)
-      expect(prototypeChainHasOwn({}, 1n)).toBe(null)
-      expect(prototypeChainHasOwn({}, null)).toBe(null)
-      expect(prototypeChainHasOwn({}, true)).toBe(null)
-      expect(prototypeChainHasOwn({}, void 0)).toBe(null)
+      const fn = v => prototypeChainHasOwn({}, v)
+      expectAllTypeTestsExceptToBe({fn: prototypeChainHasOwn, result: null}, 'string', 'symbol')
     })
 
     it('returns `null` for non-existing props', () => {
