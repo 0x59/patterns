@@ -314,7 +314,7 @@ describe('Util', () => {
 
     it('returns `null` for props other than strings and symbols', () => {
       const fn = v => prototypeChainHasOwn({}, v)
-      expectAllTypeTestsExceptToBe({fn: prototypeChainHasOwn, result: null}, 'string', 'symbol')
+      expectAllTypeTestsExceptToBe({fn, result: null}, 'string', 'symbol')
     })
 
     it('returns `null` for non-existing props', () => {
