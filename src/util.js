@@ -237,22 +237,45 @@ export function prototypeChainHasOwn(fn, prop) {
 /**
  * Type guard decorator for functions
  * @func withTypeGuards
- * @param target {function} Function to execute with valid arguments
+ * @param targetFn {function} Function to execute with valid arguments
  * @param types {...TypeGuardType} Type guard configurations per target argument
  * @throws {TypeGuardError}
  * @return {function} Target function wrapped in type guards for target argument validation
  */
-export function withTypeGuards(target, ...types) {
+export function withTypeGuards(targetFn, ...types) {
   return (...targetArgs) => {
-    let index = 0
+    let index = -1
     let length = Math.max(targetArgs.length, types.length)
 
-    for (; index < length; ++index) {
+    while (++index < length) {
       const [typeFn, message, ...typeArgs] = types[index] || types[types.length - 1]
       typeFn(targetArgs[index], ...typeArgs) || throw new TypeGuardError(message)
     }
 
-    return target(...targetArgs)
+    return targetFn(...targetArgs)
   }
 }
 
+/**
+ * Type guard decorator for functions
+ * @func withTypeGuardFns
+ * @param targetFn {function} Function to execute with valid arguments
+ * @param typeFns {...TypeGuardType} Type guard functions per target argument
+ * @throws {TypeGuardError}
+ * @return {function} Target function wrapped in type guards for target argument validation
+ */
+export function withTypeGuardFns(targetFn, ...typeFns) {
+  return (...targetArgs) => {
+    let index = -1
+    let length = Math.max(targetArgs.length, typeFns.length)
+
+    while (++index < length) {
+      const typeFn = typeFns[index] || typeFns[typeFns.length - 1]
+      typeFn(targetArgs[index]) || throw new TypeGuardError(withTypeGuardFns.getDefaultMessage(index))
+    }
+
+    return targetFn(...targetArgs)
+  }
+}
+
+withTypeGuardFns.getDefaultMessage = index => `Invalid argument at index ${index}.`

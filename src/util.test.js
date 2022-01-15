@@ -18,7 +18,8 @@ import {
   makeOnlyOwnBooleans,
   prototypeChainHasOwn,
   TypeGuardError,
-  withTypeGuards
+  withTypeGuards,
+  withTypeGuardFns
 } from './util'
 import { jest } from '@jest/globals'
 
@@ -71,7 +72,8 @@ describe('Util', () => {
       makeOnlyOwnBooleans: expect.any(Function),
       prototypeChainHasOwn: expect.any(Function),
       TypeGuardError: expect.any(Function),
-      withTypeGuards: expect.any(Function)
+      withTypeGuards: expect.any(Function),
+      withTypeGuardFns: expect.any(Function)
     }
 
     expect(Object.keys(Module).sort()).toEqual(Object.keys(expected).sort())
@@ -437,6 +439,91 @@ describe('Util', () => {
       try { targetWithTypeGuard(arg1, arg2) } catch(e) {
         expect(e.message).not.toBe(type2ErrMsg)
         expect(e.message.length).not.toBe(0)
+      }
+    })
+  })
+
+  describe('withTypeGuardFns()', () => {
+    let targetFn
+    let targetWithTypeGuard
+    let type1Fn
+    let type2Fn
+    const arg1 = { arg1: 'test' }
+    const arg2 = { arg2: 'test' }
+    const arg3 = { arg3: 'test' }
+    const type2Arg1 = { type2Arg1: 'test' }
+    const type2Arg2 = { type2Arg2: 'test' }
+
+    beforeEach(() => {
+      targetFn = jest.fn()
+      type1Fn = jest.fn(() => true)
+      type2Fn = jest.fn(() => true)
+      targetWithTypeGuard = withTypeGuardFns(
+        targetFn,
+        type1Fn,
+        a => type2Fn(a, type2Arg1, type2Arg2)
+      )
+    })
+
+    it('returns a function', () => {
+      expect(withTypeGuardFns()).toEqual(expect.any(Function))
+    })
+
+    it('calls target with correct arguments', () => {
+      targetWithTypeGuard(arg1, arg2)
+
+      expect(targetFn).toBeCalledTimes(1)
+      expect(targetFn).toBeCalledWith(arg1, arg2)
+    })
+
+    it('calls type functions with correct arguments', () => {
+      targetWithTypeGuard(arg1, arg2)
+
+      expect(type1Fn).toBeCalledTimes(1)
+      expect(type1Fn).toBeCalledWith(arg1)
+      expect(type2Fn).toBeCalledTimes(1)
+      expect(type2Fn).toBeCalledWith(arg2, type2Arg1, type2Arg2)
+    })
+
+    it('uses last type for rest arguments', () => {
+      targetWithTypeGuard(arg1, arg2, arg3)
+
+      expect(type1Fn).toBeCalledTimes(1)
+      expect(type1Fn).toBeCalledWith(arg1)
+      expect(type2Fn).toBeCalledTimes(2)
+      expect(type2Fn).toBeCalledWith(arg2, type2Arg1, type2Arg2)
+      expect(type2Fn).lastCalledWith(arg3, type2Arg1, type2Arg2)
+    })
+
+    it('uses `undefined` to run remaining type tests', () => {
+      targetWithTypeGuard()
+
+      expect(type1Fn).toBeCalledTimes(1)
+      expect(type1Fn).toBeCalledWith(void 0)
+      expect(type2Fn).toBeCalledTimes(1)
+      expect(type2Fn).toBeCalledWith(void 0, type2Arg1, type2Arg2)
+    })
+
+    it('throws correct message for invalid arguments', () => {
+      type1Fn = jest.fn(() => false)
+      targetWithTypeGuard = withTypeGuardFns(targetFn,
+        type1Fn,
+        type2Fn
+      )
+
+      try { targetWithTypeGuard(arg1, arg2) } catch(e) {
+        expect(e.message).toBe(withTypeGuardFns.getDefaultMessage(0))
+      }
+
+      type1Fn = jest.fn(() => true)
+      type2Fn = jest.fn(() => false)
+      targetWithTypeGuard = withTypeGuardFns(targetFn,
+        type1Fn,
+        a => type2Fn(a, type2Arg1, type2Arg2)
+      )
+
+      try { targetWithTypeGuard(arg1, arg2) } catch(e) {
+        expect(e.message).toBe(withTypeGuardFns.getDefaultMessage(1))
       }
     })
   })
