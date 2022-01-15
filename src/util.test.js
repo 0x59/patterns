@@ -106,13 +106,13 @@ describe('Util', () => {
 
     it('requires an array', () => {
       const isType = jest.fn(() => true)
-      expect(() => isArrOf(void 0, isType)).toThrowError(TypeGuardError)
+      expect(() => isArrOf(void 0, isType)).toThrow(TypeGuardError)
       expect(() => isArrOf([], isType)).not.toThrow()
     })
 
     it('requires a type function', () => {
       const isType = jest.fn(() => true)
-      expect(() => isArrOf([])).toThrowError(TypeGuardError)
+      expect(() => isArrOf([])).toThrow(TypeGuardError)
       expect(() => isArrOf([], isType)).not.toThrow()
     })
 
@@ -141,7 +141,7 @@ describe('Util', () => {
   describe('makeOnlyOwnBooleans()', () => {
 
     it('requires an object', () => {
-      expect(() => makeOnlyOwnBooleans(0)).toThrowError(TypeGuardError)
+      expect(() => makeOnlyOwnBooleans(0)).toThrow(TypeGuardError)
       expect(() => makeOnlyOwnBooleans({})).not.toThrow()
     })
 
