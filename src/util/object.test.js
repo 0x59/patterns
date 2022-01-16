@@ -1,121 +1,34 @@
-import * as Module from './util'
+import * as Module from './object'
 import {
-  _isArrOf,
   _makeOnlyOwnBooleans,
-  isAny,
-  isArr,
-  isArrOf,
-  isBigInt,
-  isBool,
-  isFn,
-  isNum,
+  makeOnlyOwnBooleans,
+  prototypeChainHasOwn
+} from './object'
+import {
   isObj,
   isOptional,
-  isRequired,
   isStr,
-  isSym,
-  isUnd,
-  makeOnlyOwnBooleans,
-  prototypeChainHasOwn,
   TypeGuardError,
   withTypeGuards,
   withTypeGuardFns
-} from './util'
+} from './types'
+import {
+  expectTypeTestsToBe,
+  expectAllTypeTestsExceptToBe
+} from '../testUtil'
 import { jest } from '@jest/globals'
 
-const makeTypeValues = () => [
-  ['array', []],
-  ['bigint', 0n],
-  ['boolean', true],
-  ['function', () => {}],
-  ['null', null],
-  ['number', 0],
-  ['object', {}],
-  ['string', ''],
-  ['symbol', Symbol()],
-  ['undefined', void 0]
-]
-
-function expectTypeTestsToBe({fn, result, not = false}, ...typeNames) {
-  const types = makeTypeValues().filter(
-    ([name]) => not ? !typeNames.includes(name) : typeNames.includes(name)
-  )
-
-  types.forEach(([, value]) => {
-    expect(fn(value)).toBe(result)
-  })
-}
-
-function expectAllTypeTestsExceptToBe({fn, result}, ...typeNames) {
-  return expectTypeTestsToBe({fn, result, not: true}, ...typeNames)
-}
-
-describe('Util', () => {
+describe('util/object', () => {
 
   it('exports correct module interface', () => {
     const expected = {
-      _isArrOf: expect.any(Function),
       _makeOnlyOwnBooleans: expect.any(Function),
-      isAny: expect.any(Function),
-      isArr: expect.any(Function),
-      isArrOf: expect.any(Function),
-      isBigInt: expect.any(Function),
-      isBool: expect.any(Function),
-      isFn: expect.any(Function),
-      isNum: expect.any(Function),
-      isObj: expect.any(Function),
-      isOptional: expect.any(Function),
-      isRequired: expect.any(Function),
-      isStr: expect.any(Function),
-      isSym: expect.any(Function),
-      isUnd: expect.any(Function),
       makeOnlyOwnBooleans: expect.any(Function),
-      prototypeChainHasOwn: expect.any(Function),
-      TypeGuardError: expect.any(Function),
-      withTypeGuards: expect.any(Function),
-      withTypeGuardFns: expect.any(Function)
+      prototypeChainHasOwn: expect.any(Function)
     }
 
     expect(Object.keys(Module).sort()).toEqual(Object.keys(expected).sort())
     expect(Module).toEqual(expect.objectContaining(expected))
-  })
-
-  describe('_isArrOf()', () => {
-
-    it('returns `true` for empty array', () => {
-      const isType = jest.fn(() => true)
-      expect(_isArrOf([], isType)).toBe(true)
-      expect(isType).not.toBeCalled()
-    })
-
-    it('returns `true` for correct type', () => {
-      const isType = jest.fn(() => true)
-      expect(_isArrOf([0, 0], isType)).toBe(true)
-      expect(isType).toBeCalledTimes(2)
-    })
-
-    it('returns `false` for incorrect type', () => {
-      const isType = jest.fn(() => false)
-      expect(_isArrOf([0, 0], isType)).toBe(false)
-      expect(isType).toBeCalledTimes(1)
-    })
-
-  })
-
-  describe('isArrOf()', () => {
-
-    it('requires an array', () => {
-      const isType = jest.fn(() => true)
-      expect(() => isArrOf(void 0, isType)).toThrow(TypeGuardError)
-      expect(() => isArrOf([], isType)).not.toThrow()
-    })
-
-    it('requires a type function', () => {
-      const isType = jest.fn(() => true)
-      expect(() => isArrOf([])).toThrow(TypeGuardError)
-      expect(() => isArrOf([], isType)).not.toThrow()
-    })
-
   })
 
   describe('_makeOnlyOwnBooleans()', () => {
@@ -148,159 +61,6 @@ describe('Util', () => {
     it('optional argument must be an array', () => {
       expect(() => makeOnlyOwnBooleans({}, 0)).toThrow(TypeGuardError)
       expect(() => makeOnlyOwnBooleans({}, 'test1')).not.toThrow()
-    })
-
-  })
-
-  describe('isAny()', () => {
-
-    it('returns `true` for any value', () => {
-      expectAllTypeTestsExceptToBe({fn: isAny, result: true})
-    })
-
-  })
-
-  describe('isArr()', () => {
-
-    it('returns `true` when value is an array', () => {
-      expect(isArr([])).toBe(true)
-    })
-
-    it('returns `false` when value is not an array', () => {
-      expectAllTypeTestsExceptToBe({fn: isArr, result: false}, 'array')
-    })
-
-  })
-
-  describe('isBigInt()', () => {
-
-    it('returns `true` when value is a bigint', () => {
-      expect(isBigInt(0n)).toBe(true)
-    })
-
-    it('returns `false` when value is not a bigint', () => {
-      expectAllTypeTestsExceptToBe({fn: isBigInt, result: false}, 'bigint')
-    })
-
-  })
-
-  describe('isBool()', () => {
-
-    it('returns `true` when value is boolean', () => {
-      expect(isBool(true)).toBe(true)
-      expect(isBool(false)).toBe(true)
-    })
-
-    it('returns `false` when value is not boolean', () => {
-      expectAllTypeTestsExceptToBe({fn: isBool, result: false}, 'boolean')
-    })
-
-  })
-
-  describe('isFn()', () => {
-
-    it('returns `true` when value is a function', () => {
-      expect(isFn(() => {})).toBe(true)
-    })
-
-    it('returns `false` when value is not a function', () => {
-      expectAllTypeTestsExceptToBe({fn: isFn, result: false}, 'function')
-    })
-
-  })
-
-  describe('isNum()', () => {
-
-    it('returns `true` when value is a number', () => {
-      expect(isNum(0)).toBe(true)
-    })
-
-    it('returns `false` when value is not a number', () => {
-      expectAllTypeTestsExceptToBe({fn: isNum, result: false}, 'number')
-    })
-
-  })
-
-  describe('isObj()', () => {
-
-    it('returns `true` when value is an object', () => {
-      expectTypeTestsToBe({fn: isObj, result: true}, 'object', 'null', 'array')
-    })
-
-    it('returns `false` when value is not an object', () => {
-      expectAllTypeTestsExceptToBe({fn: isObj, result: false}, 'object', 'null', 'array')
-    })
-
-  })
-
-  describe('isOptional()', () => {
-
-    it('returns a function', () => {
-      const typeFn = jest.fn(() => true)
-      expect(isOptional(typeFn)).toEqual(expect.any(Function))
-    })
-
-    it('returns `true` when value is `undefined` and skips type fn', () => {
-      const typeFn = jest.fn(() => true)
-      expect(isOptional(typeFn)(void 0)).toBe(true)
-      expect(typeFn).not.toBeCalled()
-    })
-
-    it('returns `true` with defined value and runs type fn with args', () => {
-      const typeFn = jest.fn(() => true)
-      const typeArg1 = {}
-      const typeArg2 = {}
-
-      expect(isOptional(typeFn)(0, typeArg1, typeArg2)).toBe(true)
-      expect(typeFn).toBeCalledWith(0, typeArg1, typeArg2)
-    })
-
-  })
-
-  describe('isRequired()', () => {
-
-    it('returns `true` when value is not `undefined`', () => {
-      expectAllTypeTestsExceptToBe({fn: isRequired, result: true}, 'undefined')
-    })
-
-    it('returns `false` when value is `undefined`', () => {
-      expect(isRequired(void 0)).toBe(false)
-    })
-
-  })
-
-  describe('isStr()', () => {
-
-    it('returns `true` when value is a string', () => {
-      expect(isStr('')).toBe(true)
-    })
-
-    it('returns `false` when value is not a string', () => {
-      expectAllTypeTestsExceptToBe({fn: isStr, result: false}, 'string')
-    })
-
-  })
-
-  describe('isSym()', () => {
-
-    it('returns `true` when value is a symbol', () => {
-      expect(isSym(Symbol())).toBe(true)
-    })
-
-    it('returns `false` when value is not a symbol', () => {
-      expectAllTypeTestsExceptToBe({fn: isSym, result: false}, 'symbol')
-    })
-
-  })
-
-  describe('isUnd()', () => {
-
-    it('returns `true` when value is `undefined`', () => {
-      expect(isUnd(void 0)).toBe(true)
-    })
-
-    it('returns `false` when value is not `undefined`', () => {
-      expectAllTypeTestsExceptToBe({fn: isUnd, result: false}, 'undefined')
     })
 
   })

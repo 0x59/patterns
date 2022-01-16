@@ -66,14 +66,14 @@ export const withMixins = (superclass, ...mixins) => {
 }
 
 /**
- * /wɪθ ˈmɪksɪns eɪ/ When `withMixins` simply isn't enough
+ * When `withMixins` simply may not be enough
  * @func withMixinsA
  * @param superclass {class} Class to extend
  * @param mixins {Mixin[]} Mixins to apply as ordered
- * @param apply {MixinFeature[]} Feature functions to apply per application
+ * @param featureFns {MixinFeature[]} Feature functions to apply per application
  * @return {class} Superclass extended by the mixin applications
  */
-export const withMixinsA = (superclass, mixins = [], apply = []) => {
+export const withMixinsA = (superclass, mixins = [], featureFns = []) => {
   return mixins.reduce((classHierarchy, mixin) => {
     if( !mixinSymbols.has(mixin) ) {
       mixinSymbols.set(mixin, Symbol())
@@ -96,8 +96,8 @@ export const withMixinsA = (superclass, mixins = [], apply = []) => {
       // Set mixin reference for hasInstance test
       application.prototype[mixinSymbol] = mixin;
 
-      return apply.length
-        ? apply.reduce((application, featureFn) => {
+      return featureFns.length
+        ? featureFns.reduce((application, featureFn) => {
             return featureFn({
               application,
               classHierarchy,

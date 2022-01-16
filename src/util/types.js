@@ -1,16 +1,25 @@
-/** @module Util */
-const	typeNames = {
-  STR: 'string',
-  FN: 'function',
-  OBJ: 'object',
-  NUM: 'number',
-  BOOL: 'boolean',
-  SYM: 'symbol',
-  UNDEF: 'undefined'
+/** @module util/types */
+
+export const typeNames = {
+  bigInt: 'bigint',
+  str: 'string',
+  fn: 'function',
+  obj: 'object',
+  num: 'number',
+  bool: 'boolean',
+  sym: 'symbol',
+  undef: 'undefined'
 }
 
 const {
-  STR
+  bigInt,
+  bool,
+  fn,
+  num,
+  obj,
+  str,
+  sym,
+  undef
 } = typeNames
 
 export class TypeGuardError extends TypeError {
@@ -24,7 +33,7 @@ export class TypeGuardError extends TypeError {
 }
 
 /**
- * Wraps `_isArrOf` with type guards; see {@link module:Util~_isArrOf}
+ * Wraps `_isArrOf` with type guards; see {@link module:util/types~_isArrOf}
  * @type {TypeValidator}
  * @func isArrOf
  * @param value {Array} Required
@@ -37,18 +46,6 @@ export const isArrOf = withTypeGuards(_isArrOf,
 )
 
 /**
- * Wraps `_makeOnlyOwnBooleans` with type guards; see {@link module:Util~_makeOnlyOwnBooleans}
- * @func makeOnlyOwnBooleans
- * @param obj {Object} Required
- * @param props {string[]} Optional
- * @return {boolean}
- */
-export const makeOnlyOwnBooleans = withTypeGuards(_makeOnlyOwnBooleans,
-  [isObj, 'Object of booleans is required.'],
-  [isOptional(isStr), 'Property names required as strings.'],
-)
-
-/**
  * Wraps Array's `every` instance method
  * @func _isArrOf
  * @param value {Array} Array containing values to test
@@ -56,32 +53,6 @@ export const makeOnlyOwnBooleans = withTypeGuards(_makeOnlyOwnBooleans,
  * @return {boolean} `true` if every value in the array tests true; otherwise `false`
  */
 export function _isArrOf(value, typeFn) { return value.every(typeFn) }
-
-/**
- * Object factory that converts own properties of object to boolean, or intersects an
- * array of properties with object properties to do the same
- * @func _makeOnlyOwnBooleans
- * @param obj {Object} Object containing properties to convert to boolean
- * @param [props] {string[]} Array of property names for intersection with object properties
- * @return {Object} Object of booleans
- */
-export function _makeOnlyOwnBooleans(obj, ...props) {
-  const result = {}
-
-  if (props.length) {
-    for (const k of props) {
-      if (Object.hasOwn(obj, k))
-        result[k] = !!obj[k]
-    }
-
-  } else {
-    for (const k of Object.keys(obj)) {
-      result[k] = !!obj[k]
-    }
-  }
-
-  return result
-}
 
 /**
  * Wraps Array's 'isArray' static method
@@ -107,7 +78,7 @@ export function isAny() { return true }
  * @param value {any} Value (operand) to test
  * @return {boolean} Result of the test
  */
-export function isBigInt(value) { return typeof value === 'bigint' }
+export function isBigInt(value) { return typeof value === bigInt }
 
 /**
  * Wraps `typeof` operator for `boolean`
@@ -116,7 +87,7 @@ export function isBigInt(value) { return typeof value === 'bigint' }
  * @param value {any} Value (operand) to test
  * @return {boolean} Result of the test
  */
-export function isBool(value) { return typeof value === 'boolean' }
+export function isBool(value) { return typeof value === bool }
 
 /**
  * Wraps `typeof` operator for `function`
@@ -125,7 +96,7 @@ export function isBool(value) { return typeof value === 'boolean' }
  * @param value {any} Value (operand) to test
  * @return {boolean} Result of the test
  */
-export function isFn(value) { return typeof value === 'function' }
+export function isFn(value) { return typeof value === fn }
 
 /**
  * Wraps `typeof` operator for `number`
@@ -134,7 +105,7 @@ export function isFn(value) { return typeof value === 'function' }
  * @param value {any} Value (operand) to test
  * @return {boolean} Result of the test
  */
-export function isNum(value) { return typeof value === 'number' }
+export function isNum(value) { return typeof value === num }
 
 /**
  * Wraps `typeof` operator for `object`
@@ -143,7 +114,7 @@ export function isNum(value) { return typeof value === 'number' }
  * @param value {any} Value (operand) to test
  * @return {boolean} Result of the test
  */
-export function isObj(value) { return typeof value === 'object' }
+export function isObj(value) { return typeof value === obj }
 
 /**
  * Pass test when `undefined`
@@ -171,7 +142,7 @@ export function isRequired(value) { return value !== void 0 }
  * @param value {any} Value (operand) to test
  * @return {boolean} Result of the test
  */
-export function isStr(value) { return typeof value === 'string' }
+export function isStr(value) { return typeof value === str }
 
 /**
  * Wraps `typeof` operator for `symbol`
@@ -180,7 +151,7 @@ export function isStr(value) { return typeof value === 'string' }
  * @param value {any} Value (operand) to test
  * @return {boolean} Result of the test
  */
-export function isSym(value) { return typeof value === 'symbol' }
+export function isSym(value) { return typeof value === sym }
 
 /**
  * Test for `undefined`. Note that this does not use the `typeof` operator. To test
@@ -191,29 +162,6 @@ export function isSym(value) { return typeof value === 'symbol' }
  * @return {boolean} Result of the test
  */
 export function isUnd(value) { return value === void 0 }
-
-/**
- * Walk the prototype chain of the constructor function testing the object at the prototype
- * property for the own property. Note that jsdoc will not generate documentation for this function
- * due to an issue with skipping names beginning with `prototype`; this documentation was generated
- * with modifications to `lib/jsdoc/name.js`.
- * @func prototypeChainHasOwn
- * @param fn {function} Constructor function at the beginning of the chain
- * @param prop {(string|symbol)} Own property of the prototype property object
- * @return {?Object} Prototype property object of the constructor function having the own property or null
- */
-export function prototypeChainHasOwn(fn, prop) {
-  let next = fn
-
-  while (next != null) {
-    if (next.prototype != null && Object.hasOwn(next.prototype, prop)) {
-      return next.prototype
-    }
-    next = Object.getPrototypeOf(next)
-  }
-
-  return null
-}
 
 /**
  * @typedef TypeValidator
@@ -233,28 +181,6 @@ export function prototypeChainHasOwn(fn, prop) {
  * or empty string indicates the default message
  * @property 2 {...any} Additional arguments to TypeValidator
  */
-
-/**
- * Type guard decorator for functions
- * @func withTypeGuards
- * @param targetFn {function} Function to execute with valid arguments
- * @param types {...TypeGuardType} Type guard configurations per target argument
- * @throws {TypeGuardError}
- * @return {function} Target function wrapped in type guards for target argument validation
- */
-export function withTypeGuards(targetFn, ...types) {
-  return (...targetArgs) => {
-    let index = -1
-    let length = Math.max(targetArgs.length, types.length)
-
-    while (++index < length) {
-      const [typeFn, message, ...typeArgs] = types[index] || types[types.length - 1]
-      typeFn(targetArgs[index], ...typeArgs) || throw new TypeGuardError(message)
-    }
-
-    return targetFn(...targetArgs)
-  }
-}
 
 /**
  * Type guard decorator for functions
@@ -279,3 +205,25 @@ export function withTypeGuardFns(targetFn, ...typeFns) {
 }
 
 withTypeGuardFns.getDefaultMessage = index => `Invalid argument at index ${index}.`
+
+/**
+ * Type guard decorator for functions
+ * @func withTypeGuards
+ * @param targetFn {function} Function to execute with valid arguments
+ * @param types {...TypeGuardType} Type guard configurations per target argument
+ * @throws {TypeGuardError}
+ * @return {function} Target function wrapped in type guards for target argument validation
+ */
+export function withTypeGuards(targetFn, ...types) {
+  return (...targetArgs) => {
+    let index = -1
+    let length = Math.max(targetArgs.length, types.length)
+
+    while (++index < length) {
+      const [typeFn, message, ...typeArgs] = types[index] || types[types.length - 1]
+      typeFn(targetArgs[index], ...typeArgs) || throw new TypeGuardError(message)
+    }
+
+    return targetFn(...targetArgs)
+  }
+}
