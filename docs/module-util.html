@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: symbolRegistry.js</title>
+    <title>JSDoc: Module: util</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,32 +17,52 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: symbolRegistry.js</h1>
+    <h1 class="page-title">Module: util</h1>
 
     
 
 
 
-    
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>/** @module Symbol Registry */
 
-/**
- * Uses a proxy to create a symbol registry that uniquely and persistently maps keys (object properties) to symbols
- * @func Symbols
- * @return {object} New symbol registry that returns a new symbol when accessing a new property, or an existing symbol when accessing an existing property
- */
-export const Symbols = () => {
-  return new Proxy({}, {
-    get(registry, name) {
-      return registry[name] || ( registry[name] = Symbol(name) )
-    }
-  })
-}
-</code></pre>
-        </article>
-    </section>
+<section>
+
+<header>
+    
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 
