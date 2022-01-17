@@ -186,7 +186,7 @@ export function isUnd(value) { return value === void 0 }
  * Type guard decorator for functions
  * @func withTypeGuardFns
  * @param targetFn {function} Function to execute with valid arguments
- * @param typeFns {...TypeGuardType} Type guard functions per target argument
+ * @param typeFns {...TypeValidator} Type guard functions per target argument
  * @throws {TypeGuardError}
  * @return {function} Target function wrapped in type guards for target argument validation
  */
@@ -210,7 +210,7 @@ withTypeGuardFns.getDefaultMessage = index => `Invalid argument at index ${index
  * Type guard decorator for functions
  * @func withTypeGuards
  * @param targetFn {function} Function to execute with valid arguments
- * @param types {...TypeGuardType} Type guard configurations per target argument
+ * @param types {...TypeGuard} Type guard configurations per target argument
  * @throws {TypeGuardError}
  * @return {function} Target function wrapped in type guards for target argument validation
  */
