@@ -1,7 +1,5 @@
 /** @module util/object */
 
-import * as Module from './object'
-
 import {
   isObj,
   isOptional,
